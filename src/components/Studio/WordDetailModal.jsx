@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Sparkles, AlertCircle, Flame, Compass, RefreshCw } from 'lucide-react';
 import { POWER_WORDS, JARGON_WORDS, FILLER_WORDS, VAGUE_WORDS } from '../../services/speechRecognition';
 
-export default function WordDetailModal({ isOpen, onClose, selectedWordObj, fullTranscript }) {
+export default function WordDetailModal({ isOpen, onClose, selectedWordObj, fullTranscript, onPracticeWord }) {
   if (!isOpen || !selectedWordObj) return null;
 
   const rawWord = selectedWordObj.raw || selectedWordObj.word || '';
@@ -36,7 +36,7 @@ export default function WordDetailModal({ isOpen, onClose, selectedWordObj, full
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-slide-up">
-      <div className="w-full max-w-md glass-panel-glow bg-slate-900 border-2 border-purple-500/60 p-6 rounded-2xl shadow-2xl relative space-y-4">
+      <div className="w-full max-w-md glass-panel-glow bg-slate-900 border-2 border-purple-500/60 p-6 rounded-3xl shadow-2xl relative space-y-4">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -50,19 +50,19 @@ export default function WordDetailModal({ isOpen, onClose, selectedWordObj, full
           <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border uppercase ${badgeColor}`}>
             {typeLabel}
           </span>
-          <h3 className="text-3xl font-black text-white tracking-tight mt-2">"{rawWord}"</h3>
+          <h3 className="text-3xl font-black text-white tracking-tight mt-2 font-heading">"{rawWord}"</h3>
         </div>
 
         {/* Word Stats */}
-        <div className="grid grid-cols-2 gap-3 text-center py-2">
+        <div className="grid grid-cols-2 gap-3 text-center py-2 font-mono">
           <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-[10px] font-mono text-slate-400 uppercase block">Total Usage</span>
-            <span className="text-xl font-bold text-purple-300 font-mono">{count} time{count > 1 ? 's' : ''}</span>
+            <span className="text-[10px] text-slate-400 uppercase block">Total Usage</span>
+            <span className="text-xl font-bold text-purple-300">{count} time{count > 1 ? 's' : ''}</span>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-[10px] font-mono text-slate-400 uppercase block">Impact Rating</span>
-            <span className="text-xl font-bold text-cyan-300 font-mono">
+            <span className="text-[10px] text-slate-400 uppercase block">Impact Rating</span>
+            <span className="text-xl font-bold text-cyan-300">
               {typeLabel.includes('Power') ? 'High Impact' : typeLabel.includes('Filler') ? 'Low Impact' : 'Standard'}
             </span>
           </div>
@@ -74,10 +74,22 @@ export default function WordDetailModal({ isOpen, onClose, selectedWordObj, full
           <p className="text-xs text-slate-200 leading-relaxed font-medium">{suggestion}</p>
         </div>
 
-        <div className="flex justify-end">
-          <button onClick={onClose} className="btn-primary text-xs">
-            Close Analysis
+        <div className="flex justify-between items-center gap-3 pt-2">
+          <button onClick={onClose} className="btn-secondary text-xs">
+            Close
           </button>
+
+          {onPracticeWord && (
+            <button
+              onClick={() => {
+                onClose();
+                onPracticeWord(cleanWord, suggestion);
+              }}
+              className="btn-primary text-xs flex items-center gap-1.5"
+            >
+              <RefreshCw size={14} /> Practice This Word
+            </button>
+          )}
         </div>
       </div>
     </div>

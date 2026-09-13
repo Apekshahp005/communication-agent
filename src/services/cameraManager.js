@@ -6,37 +6,103 @@ export class CameraManager {
     this.stream = null;
     this.videoElement = null;
     this.canvasElement = null;
+    this.activeRequestId = 0;
   }
 
   async startCamera(videoElement) {
     this.videoElement = videoElement;
+    const currentReqId = ++this.activeRequestId;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return {
+        success: false,
+        status: 'unsupported',
+        error: 'WebRTC camera access is not supported by your browser or origin (HTTPS required).'
+      };
+    }
+
+    // Stop existing stream if any
+    this.stopCamera();
+
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'user'
-        },
-        audio: false
-      });
+      // First attempt: High definition user-facing camera
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user'
+          },
+          audio: false
+        });
+      } catch (hdErr) {
+        // Fallback attempt: Basic video constraints
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
+
+      // Check if request was cancelled while waiting for user prompt
+      if (currentReqId !== this.activeRequestId) {
+        stream.getTracks().forEach(track => track.stop());
+        return { success: false, status: 'cancelled' };
+      }
+
+      this.stream = stream;
+
       if (this.videoElement) {
         this.videoElement.srcObject = this.stream;
-        await this.videoElement.play();
+        try {
+          await this.videoElement.play();
+        } catch (playErr) {
+          if (playErr.name !== 'AbortError') {
+            console.warn('Video play warning:', playErr);
+          }
+        }
       }
-      return { success: true };
+
+      return { success: true, status: 'granted' };
     } catch (err) {
       console.warn('Camera Access Error:', err);
-      return { success: false, error: err.message || 'Camera permission denied or unavailable' };
+      let status = 'error';
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        status = 'denied';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        status = 'not_found';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        status = 'in_use';
+      }
+
+      return {
+        success: false,
+        status,
+        error: err.message || 'Camera permission denied or unavailable'
+      };
     }
   }
 
   stopCamera() {
+    this.activeRequestId++;
     if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+      this.stream.getTracks().forEach(track => {
+        try {
+          track.stop();
+        } catch (e) {}
+      });
       this.stream = null;
     }
     if (this.videoElement) {
       this.videoElement.srcObject = null;
+    }
+  }
+
+  setVideoEnabled(enabled) {
+    if (this.stream) {
+      this.stream.getVideoTracks().forEach(track => {
+        track.enabled = enabled;
+      });
     }
   }
 

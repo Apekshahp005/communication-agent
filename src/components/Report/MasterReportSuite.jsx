@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Award, CheckCircle2, AlertOctagon, Sparkles, Flame, Eye, BarChart3, ArrowRight, X, Download, FileText, Code, TrendingUp, Clock, RefreshCw, Zap, Lightbulb, Target, ChevronDown, ChevronUp, BookOpen, Volume2, ShieldCheck, HeartHandshake
+  Award, CheckCircle2, AlertOctagon, Sparkles, Flame, Eye, BarChart3, ArrowRight, X, Download, FileText, Code, TrendingUp, Clock, RefreshCw, Zap, Lightbulb, Target, ChevronDown, ChevronUp, BookOpen, Volume2, ShieldCheck, HeartHandshake, Compass
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunchNextChallenge, onLaunchNextSession, onWordClick }) {
   const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis'
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
-  
+
+  // Animated Score counter state
+  const [displayScore, setDisplayScore] = useState(0);
+
   // Interactive Score Breakdown state
   const [selectedScoreDimension, setSelectedScoreDimension] = useState(null);
-  
+
   // Clickable Strengths & Weaknesses expansion state
   const [expandedStrengthIdx, setExpandedStrengthIdx] = useState(null);
   const [expandedWeaknessIdx, setExpandedWeaknessIdx] = useState(null);
@@ -18,20 +21,42 @@ export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunc
   // Detailed Analysis Accordion state
   const [expandedAnalysisSection, setExpandedAnalysisSection] = useState('topic');
 
+  const report = reportData?.report || {};
+  const scores = report.scores || {};
+  const targetScore = report.overallScore || report.overallEffectivenessScore || 82;
+  const comparison = report.comparison || { isFirstSession: true };
+
+  // Score Count-Up Animation
   useEffect(() => {
-    if (isOpen && reportData?.report?.overallScore > 75) {
-      try {
-        confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
-      } catch (e) {}
+    if (isOpen) {
+      setDisplayScore(0);
+      let start = 0;
+      const duration = 1200;
+      const stepTime = 20;
+      const steps = duration / stepTime;
+      const increment = targetScore / steps;
+
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= targetScore) {
+          setDisplayScore(targetScore);
+          clearInterval(timer);
+        } else {
+          setDisplayScore(Math.floor(start));
+        }
+      }, stepTime);
+
+      if (targetScore > 75) {
+        try {
+          confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        } catch (e) {}
+      }
+
+      return () => clearInterval(timer);
     }
-  }, [isOpen, reportData]);
+  }, [isOpen, targetScore]);
 
   if (!isOpen || !reportData) return null;
-
-  const report = reportData.report || {};
-  const scores = report.scores || {};
-  const overallScore = report.overallScore || report.overallEffectivenessScore || 82;
-  const comparison = report.comparison || { isFirstSession: true };
 
   const getScoreColor = (val = 0) => {
     if (val >= 85) return 'text-emerald-400 border-emerald-500/50 bg-emerald-950/40 hover:border-emerald-400';
@@ -48,7 +73,7 @@ Date: ${new Date().toLocaleString()}
 Mode / Topic: ${reportData.sessionMode || 'Practice'}
 Audience Persona: ${reportData.audienceType || 'Standard'}
 
-OVERALL SCORE: ${overallScore}/100
+OVERALL SCORE: ${targetScore}/100
 RATING: ${report.overallRating || 'Good'}
 
 CATEGORY SCORES:
@@ -59,11 +84,8 @@ CATEGORY SCORES:
 - Storytelling: ${scores.storytellingScore || 79}%
 - Fluency: ${scores.fluencyScore || 78}%
 
-BIGGEST PROBLEM:
-${report.biggestProblem || ''}
-
 BIGGEST OPPORTUNITY:
-${report.biggestOpportunity || ''}
+${report.biggestOpportunity || report.biggestProblem || ''}
 
 BEST SPOKEN LINE:
 "${report.bestSpokenLine?.snippet || ''}"
@@ -75,7 +97,6 @@ STORY MEMORY TEST (WHAT AUDIENCE REMEMBERS):
 
 TARGETED NEXT SESSION PRACTICE DRILL:
 ${report.nextPracticeDrill?.title || ''}
-Focus: ${report.nextPracticeDrill?.focus || ''}
 Instruction: ${report.nextPracticeDrill?.instruction || ''}
     `;
 
@@ -87,72 +108,39 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
     link.click();
   };
 
-  const aiSuggestionsList = [
-    {
-      id: 'hook',
-      title: 'Start with a Strong Curiosity Hook',
-      whyItMatters: 'The first 10 seconds dictate whether an audience leans in or tunes out.',
-      whatYouDid: 'You introduced the topic directly without creating an open loop.',
-      whatToDoNext: 'Open your next talk with a bold question, surprising fact, or human crisis.',
-      example: '"What if 90% of your daily work could be automated by next year?"'
-    },
-    {
-      id: 'analogy',
-      title: 'Bridge Technical Terms with Everyday Analogies',
-      whyItMatters: 'Jargon confuses non-technical listeners; analogies create instant mental pictures.',
-      whatYouDid: 'You introduced complex terms without an everyday reference point.',
-      whatToDoNext: 'Follow any technical term immediately with "It is like..."',
-      example: '"A database index is like the index at the back of a cookbook."'
-    },
-    {
-      id: 'pauses',
-      title: 'Use Strategic Deliberate Pauses',
-      whyItMatters: 'Silence builds anticipation and gives your audience time to absorb key ideas.',
-      whatYouDid: 'You rushed into the next sentence right after making your main point.',
-      whatToDoNext: 'Stop for 1.5 seconds right after declaring your core takeaway.',
-      example: 'Declare main point -> [Pause 1.5s] -> Continue.'
-    }
-  ];
-
   const scoreDimensionDetails = {
     'Clarity & Structure': {
       score: scores.clarityScore || scores.clarity || 84,
-      icon: BookOpen,
       evaluates: 'Logical progression, concise phrasing, and zero ambiguity.',
       feedback: 'Your ideas were logical, but sentence preambles can be trimmed by 20%.',
       exercise: 'Practice the 1-Sentence Summary Drill before expanding into details.'
     },
     'Confidence & Delivery': {
       score: scores.confidenceScore || 80,
-      icon: ShieldCheck,
       evaluates: 'Vocal projection, pitch variation, and absence of hesitant qualifiers.',
       feedback: 'Good vocal stability. Eliminating "I guess" will project 15% higher authority.',
       exercise: 'Deliver 3 statements starting with high conviction verbs.'
     },
     'Language & Vocabulary': {
       score: scores.vocabularyScore || 82,
-      icon: Sparkles,
       evaluates: 'High-impact power words, precise terminology, and low filler frequency.',
       feedback: 'Solid word choices overall. Replace repetitive transition words like "basically".',
       exercise: 'Incorporate 2 vivid action verbs into every key point.'
     },
     'Engagement & Expression': {
       score: scores.engagementScore || 85,
-      icon: HeartHandshake,
       evaluates: 'Audience warmth, rhetorical questions, and facial dynamism.',
       feedback: 'Strong listener connection. Keep asking rhetorical questions to keep interest high.',
       exercise: 'Include a direct audience question in your opening 15 seconds.'
     },
     'Storytelling': {
       score: scores.storytellingScore || 79,
-      icon: Flame,
       evaluates: 'Narrative arcs, tension build-up, concrete characters, and punchy resolution.',
       feedback: 'Good story concept, but heighten the tension before revealing your solution.',
       exercise: 'Use the "Before vs After" storytelling framework.'
     },
     'Fluency': {
       score: scores.fluencyScore || 78,
-      icon: Volume2,
       evaluates: 'Steady pacing (130-160 WPM) and seamless transitions between thoughts.',
       feedback: 'Pacing was smooth. Maintain brief silent pauses instead of filler vocalizations.',
       exercise: 'Practice 2-second silent pauses at sentence boundaries.'
@@ -215,7 +203,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                   </span>
                 )}
               </span>
-              <h2 className="text-2xl font-extrabold text-white">
+              <h2 className="text-2xl font-extrabold text-white font-heading">
                 {reportData.sessionMode ? `Session: "${reportData.sessionMode}"` : 'Communication Report'}
               </h2>
             </div>
@@ -258,13 +246,13 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
         {/* TAB 1: EXECUTIVE SCORECARD */}
         {activeReportTab === 'executive' && (
           <div className="space-y-6 animate-slide-up">
-            {/* Hero Scorecard */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gradient-to-r from-purple-950/70 via-slate-900 to-cyan-950/70 border border-purple-500/40 p-6 rounded-2xl">
+            {/* Animated Hero Scorecard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gradient-to-r from-purple-950/70 via-slate-900 to-cyan-950/70 border border-purple-500/40 p-6 rounded-2xl shadow-xl">
               <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-800 pb-4 md:pb-0 md:pr-6">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Communication Score</span>
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">Overall Communication Score</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-5xl font-black text-white">{overallScore}</span>
-                  <span className="text-slate-500 font-bold text-lg">/100</span>
+                  <span className="text-5xl font-black text-white font-mono">{displayScore}</span>
+                  <span className="text-slate-500 font-bold text-lg font-mono">/100</span>
                 </div>
                 <span className="mt-2 inline-block px-3.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold">
                   {report.overallRating || 'Good'}
@@ -297,7 +285,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             {selectedScoreDimension && (
               <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/30 space-y-2 animate-slide-up">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
                     <Sparkles size={16} className="text-purple-400" /> Dimension Analysis: {selectedScoreDimension}
                   </h4>
                   <button onClick={() => setSelectedScoreDimension(null)} className="text-slate-400 hover:text-white text-xs">
@@ -321,35 +309,68 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
               </div>
             )}
 
-            {/* BIGGEST PROBLEM & BIGGEST OPPORTUNITY CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {report.biggestProblem && (
-                <div className="glass-panel p-5 border-l-4 border-l-rose-500 space-y-1">
-                  <span className="text-xs font-mono font-bold text-rose-400 uppercase flex items-center gap-1.5">
-                    <AlertOctagon size={16} /> Biggest Problem
-                  </span>
-                  <p className="text-sm font-bold text-white leading-relaxed">{report.biggestProblem}</p>
-                </div>
-              )}
+            {/* PROMINENT HERO CARD: YOUR BIGGEST OPPORTUNITY */}
+            <div className="glass-panel p-6 border-2 border-cyan-500/70 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-purple-950/40 rounded-3xl shadow-2xl space-y-3">
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2 bg-cyan-950/90 px-3.5 py-1 rounded-full border border-cyan-500/50">
+                  <Compass size={16} className="text-cyan-400 animate-spin-slow" /> YOUR HIGHEST-IMPACT OPPORTUNITY
+                </span>
+                <span className="text-xs font-mono text-purple-300 font-bold">#1 Focus for Next Attempt</span>
+              </div>
 
-              {report.biggestOpportunity && (
-                <div className="glass-panel p-5 border-l-4 border-l-cyan-500 space-y-1">
-                  <span className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center gap-1.5">
-                    <Lightbulb size={16} /> Primary Opportunity
-                  </span>
-                  <p className="text-sm font-bold text-white leading-relaxed">{report.biggestOpportunity}</p>
+              <h3 className="text-xl font-extrabold text-white font-heading">
+                {report.biggestOpportunity || report.biggestProblem || "Pacing & Silent Pause Control"}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-1">
+                <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">Why This Matters:</span>
+                  <p className="text-slate-200 mt-1 leading-relaxed">
+                    Addressing this single area yields the largest instantaneous gain in vocal authority and listener retention.
+                  </p>
                 </div>
-              )}
+
+                <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase block">Session Evidence:</span>
+                  <p className="text-slate-200 mt-1 leading-relaxed">
+                    {report.biggestProblem || "Sentences ran together without strategic 1.5-second pauses."}
+                  </p>
+                </div>
+
+                <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">Recommended Technique:</span>
+                  <p className="text-emerald-200 font-medium mt-1 leading-relaxed">
+                    {report.nextPracticeDrill?.instruction || "Deliver your main point, pause for 1.5s, then reveal your evidence."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onLaunchNextChallenge) {
+                      onLaunchNextChallenge({
+                        title: report.nextPracticeDrill?.title || "Targeted Opportunity Practice",
+                        prompt: report.nextPracticeDrill?.instruction || "Focus on silent pause control and clear declarations."
+                      });
+                    }
+                  }}
+                  className="btn-primary text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2"
+                >
+                  <Sparkles size={14} /> Practice Now <ArrowRight size={14} />
+                </button>
+              </div>
             </div>
 
             {/* WHAT YOU DID WELL VS AREAS TO IMPROVE (CLICKABLE EXPANDABLE) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="glass-panel p-5 space-y-3 border-l-4 border-l-emerald-500">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-2 font-heading">
                     <CheckCircle2 size={18} /> What You Did Well
                   </h3>
-                  <span className="text-[10px] text-slate-400">Click item to expand</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Click item to expand</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-200">
                   {(report.whatYouDidWell || [
@@ -373,7 +394,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                         </div>
                         {isExp && (
                           <div className="pt-2 border-t border-slate-800 text-[11px] text-emerald-200/90 leading-relaxed animate-slide-up">
-                            <strong>Why it worked:</strong> This technique kept listener comprehension high and projected confidence.
+                            <strong>Why it worked:</strong> This technique kept listener comprehension high and projected executive confidence.
                           </div>
                         )}
                       </li>
@@ -384,10 +405,10 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
 
               <div className="glass-panel p-5 space-y-3 border-l-4 border-l-amber-500">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2 font-heading">
                     <AlertOctagon size={18} /> Areas to Improve
                   </h3>
-                  <span className="text-[10px] text-slate-400">Click item for action plan</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Click item for action plan</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-200">
                   {(report.biggestWeaknesses || [
@@ -424,73 +445,14 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 2: INTERACTIVE AI SUGGESTIONS FOR NEXT TIME */}
-        {activeReportTab === 'ai_suggestions' && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="glass-panel p-5 border-cyan-500/40 space-y-1">
-              <span className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center gap-1.5">
-                <Sparkles size={16} /> INTERACTIVE COACHING CARDS
-              </span>
-              <h3 className="text-lg font-bold text-white">Actionable Suggestions for Your Next Attempt</h3>
-              <p className="text-xs text-slate-400">Click any card below to reveal Why This Matters, What You Did, and specific Examples.</p>
-            </div>
-
-            <div className="space-y-3">
-              {aiSuggestionsList.map((item) => {
-                const isExpanded = expandedSuggestion === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => setExpandedSuggestion(isExpanded ? null : item.id)}
-                    className={`glass-panel p-5 cursor-pointer transition-all border ${
-                      isExpanded ? 'border-purple-500/80 bg-slate-900/90 shadow-xl shadow-purple-500/20' : 'border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-purple-400" /> {item.title}
-                      </h4>
-                      {isExpanded ? <ChevronUp size={18} className="text-purple-400" /> : <ChevronDown size={18} className="text-slate-500" />}
-                    </div>
-
-                    {isExpanded && (
-                      <div className="mt-4 pt-4 border-t border-slate-800/80 space-y-3 text-xs animate-slide-up">
-                        <div>
-                          <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">Why This Matters:</span>
-                          <p className="text-slate-200 mt-0.5">{item.whyItMatters}</p>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] font-mono text-amber-400 font-bold uppercase block">What You Did:</span>
-                          <p className="text-slate-300 mt-0.5">{item.whatYouDid}</p>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">What To Do Next:</span>
-                          <p className="text-emerald-200 font-medium mt-0.5">{item.whatToDoNext}</p>
-                        </div>
-
-                        <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 italic">
-                          <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase not-italic block mb-0.5">Example Phrasing:</span>
-                          {item.example}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: DETAILED CATEGORY BREAKDOWN (ACCORDION) */}
+        {/* TAB 2: DETAILED CATEGORY BREAKDOWN */}
         {activeReportTab === 'detailed_analysis' && (
           <div className="space-y-4 animate-slide-up">
             <div className="glass-panel p-5 border-purple-500/40 space-y-1">
               <span className="text-xs font-mono font-bold text-purple-400 uppercase flex items-center gap-1.5">
                 <BarChart3 size={16} /> EXPANDABLE CATEGORY AUDIT
               </span>
-              <h3 className="text-lg font-bold text-white">In-Depth Evaluation per Communication Pillar</h3>
+              <h3 className="text-lg font-bold text-white font-heading">In-Depth Evaluation per Communication Pillar</h3>
               <p className="text-xs text-slate-400">Click any category accordion to expand detailed AI observations.</p>
             </div>
 
@@ -507,7 +469,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
                           <Sparkles size={16} className="text-purple-400" /> {sec.title}
                         </h4>
                         <p className="text-xs text-slate-400 mt-0.5">{sec.summary}</p>
@@ -532,14 +494,14 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 4: STORY MEMORY TEST */}
+        {/* TAB 3: STORY MEMORY TEST */}
         {activeReportTab === 'story_memory' && (
           <div className="space-y-5 animate-slide-up">
             <div className="glass-panel p-6 border-purple-500/40 bg-purple-950/20 space-y-3">
               <div className="flex items-center gap-2 text-purple-300 font-mono font-bold text-sm uppercase">
                 <Sparkles size={18} className="text-purple-400" /> THE STORY MEMORY TEST
               </div>
-              <h3 className="text-lg font-bold text-white">What will the audience actually remember tomorrow?</h3>
+              <h3 className="text-lg font-bold text-white font-heading">What will the audience actually remember tomorrow?</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Great communication isn't just about grammar—it's about leaving a lasting mental imprint. Here is what your audience will take away:
               </p>
@@ -548,22 +510,22 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             {report.storyMemory && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div className="glass-panel p-4 space-y-1 border-emerald-500/30">
-                  <span className="text-emerald-400 font-bold uppercase block">Main Takeaway Message</span>
+                  <span className="text-emerald-400 font-bold uppercase block font-mono">Main Takeaway Message</span>
                   <p className="text-slate-200 font-medium">{report.storyMemory.audienceRemembers}</p>
                 </div>
 
                 <div className="glass-panel p-4 space-y-1 border-cyan-500/30">
-                  <span className="text-cyan-400 font-bold uppercase block">Most Memorable Idea</span>
+                  <span className="text-cyan-400 font-bold uppercase block font-mono">Most Memorable Idea</span>
                   <p className="text-slate-200 font-medium">{report.storyMemory.mostMemorableIdea}</p>
                 </div>
 
                 <div className="glass-panel p-4 space-y-1 border-purple-500/30">
-                  <span className="text-purple-300 font-bold uppercase block">Emotional Moment</span>
+                  <span className="text-purple-300 font-bold uppercase block font-mono">Emotional Moment</span>
                   <p className="text-slate-200 font-medium">{report.storyMemory.emotionalMoment}</p>
                 </div>
 
                 <div className="glass-panel p-4 space-y-1 border-rose-500/30">
-                  <span className="text-rose-400 font-bold uppercase block">Forgettable Section</span>
+                  <span className="text-rose-400 font-bold uppercase block font-mono">Forgettable Section</span>
                   <p className="text-slate-200 font-medium">{report.storyMemory.forgettableSection}</p>
                 </div>
               </div>
@@ -571,13 +533,13 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 5: PACING & FILLERS */}
+        {/* TAB 4: PACING & FILLERS */}
         {activeReportTab === 'pacing' && (
           <div className="space-y-5 animate-slide-up">
             {report.fillerAnalysis && (
               <div className="glass-panel p-5 border-slate-800 space-y-3">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-slate-200">Filler Word Analysis</h4>
+                  <h4 className="text-sm font-bold text-slate-200 font-heading">Filler Word Analysis</h4>
                   <span className="text-xs font-mono text-rose-400 font-bold bg-rose-950/80 px-3 py-1 rounded-full border border-rose-800">
                     Filler Rate: {report.fillerAnalysis.fillerRatePercent || 0}%
                   </span>
@@ -612,12 +574,12 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 6: WORD FREQUENCY (INTERACTIVE WORD CHIPS) */}
+        {/* TAB 5: WORD FREQUENCY */}
         {activeReportTab === 'words' && (
           <div className="space-y-5 animate-slide-up">
             <div className="glass-panel p-5 border-slate-800 space-y-3">
-              <h4 className="text-sm font-bold text-slate-200">Word Frequency & Replacement Suggestions</h4>
-              <p className="text-xs text-slate-400">Click any word chip below to inspect full context and alternatives.</p>
+              <h4 className="text-sm font-bold text-slate-200 font-heading">Word Frequency & Replacement Suggestions</h4>
+              <p className="text-xs text-slate-400 font-mono">Click any word chip below to inspect full context and alternatives.</p>
 
               <div className="flex flex-wrap gap-2 pt-2">
                 {(report.wordFrequency || [
@@ -644,7 +606,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 7: BEST SPOKEN LINE & MOMENTS */}
+        {/* TAB 6: BEST SPOKEN LINE & MOMENTS */}
         {activeReportTab === 'moments' && (
           <div className="space-y-5 animate-slide-up">
             {report.bestSpokenLine && (
@@ -663,7 +625,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* BOTTOM ACTION BAR WITH PRIMARY INTERACTIVE CTA: START NEXT SESSION */}
+        {/* BOTTOM ACTION BAR WITH PRIMARY INTERACTIVE CTA */}
         <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
           <button
             onClick={() => {
@@ -694,4 +656,3 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
     </div>
   );
 }
-

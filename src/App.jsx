@@ -133,6 +133,10 @@ export default function App() {
         onClose={() => setIsWordModalOpen(false)}
         selectedWordObj={selectedWordObj}
         fullTranscript={fullSessionTranscript}
+        onPracticeWord={(word, suggestion) => {
+          setIsWordModalOpen(false);
+          setActiveTab('studio');
+        }}
       />
 
       {/* MASTER POST-SESSION REPORT MODAL */}

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X, Sparkles, CheckCircle2, ArrowRight, Wand2, RefreshCw } from 'lucide-react';
 
-export default function SentenceAnalysisModal({ isOpen, onClose, selectedSentence }) {
+export default function SentenceAnalysisModal({ isOpen, onClose, selectedSentence, onPracticeSentence }) {
   if (!isOpen || !selectedSentence) return null;
 
   // Derive scores and improvement suggestion for the selected sentence
@@ -42,7 +42,7 @@ export default function SentenceAnalysisModal({ isOpen, onClose, selectedSentenc
             <span className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">
               SENTENCE-LEVEL ANALYSIS
             </span>
-            <h3 className="text-xl font-extrabold text-white">Linguistic & Delivery Breakdown</h3>
+            <h3 className="text-xl font-extrabold text-white font-heading">Linguistic & Delivery Breakdown</h3>
           </div>
         </div>
 
@@ -95,10 +95,22 @@ export default function SentenceAnalysisModal({ isOpen, onClose, selectedSentenc
           </p>
         </div>
 
-        <div className="flex justify-end">
-          <button onClick={onClose} className="btn-primary text-xs">
+        <div className="flex justify-between items-center gap-3 pt-2">
+          <button onClick={onClose} className="btn-secondary text-xs">
             Close Analysis
           </button>
+
+          {onPracticeSentence && (
+            <button
+              onClick={() => {
+                onClose();
+                onPracticeSentence(improvedSentence);
+              }}
+              className="btn-primary text-xs flex items-center gap-1.5"
+            >
+              <RefreshCw size={14} /> Practice This Sentence
+            </button>
+          )}
         </div>
       </div>
     </div>
