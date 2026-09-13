@@ -1,16 +1,16 @@
 import React from 'react';
-import { AlertTriangle, Sparkles, Lightbulb, Zap } from 'lucide-react';
+import { AlertTriangle, Sparkles, Lightbulb, Zap, RefreshCw } from 'lucide-react';
 
-export default function MicroFeedbackHUD({ level1Alert, level2Toasts = [], storyOpportunity, witOpportunity }) {
+export default function MicroFeedbackHUD({ level1Alert, level2Toasts = [], storyOpportunity, witOpportunity, onTriggerRetry }) {
   if (!level1Alert && level2Toasts.length === 0 && !storyOpportunity && !witOpportunity) {
     return null;
   }
 
   return (
     <div className="w-full space-y-3 animate-slide-up">
-      {/* LEVEL 1 CRITICAL ALERT BANNER */}
+      {/* LEVEL 1 CRITICAL ALERT BANNER WITH INTERACTIVE RETRY THIS BUTTON */}
       {level1Alert && (
-        <div className="bg-gradient-to-r from-rose-950/90 via-red-900/80 to-rose-950/90 border-2 border-rose-500/80 text-rose-100 p-4 rounded-2xl shadow-xl shadow-rose-950/50 flex items-center justify-between gap-4 animate-pulse-glow">
+        <div className="bg-gradient-to-r from-rose-950/90 via-red-900/80 to-rose-950/90 border-2 border-rose-500/80 text-rose-100 p-4 rounded-2xl shadow-xl shadow-rose-950/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse-glow">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/50 flex items-center justify-center text-rose-300 shrink-0">
               <AlertTriangle size={22} className="animate-bounce" />
@@ -24,6 +24,15 @@ export default function MicroFeedbackHUD({ level1Alert, level2Toasts = [], story
               </p>
             </div>
           </div>
+
+          {onTriggerRetry && (
+            <button
+              onClick={() => onTriggerRetry(level1Alert)}
+              className="bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 shrink-0 self-end sm:self-center transition-all hover:scale-105"
+            >
+              <RefreshCw size={14} /> Retry This
+            </button>
+          )}
         </div>
       )}
 
@@ -45,25 +54,46 @@ export default function MicroFeedbackHUD({ level1Alert, level2Toasts = [], story
       {/* STORY CALLBACK / WIT OPPORTUNITY HINTS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {storyOpportunity && (
-          <div className="bg-purple-950/50 border border-purple-500/40 text-purple-200 text-xs p-3 rounded-xl backdrop-blur-md flex items-start gap-2.5">
-            <Sparkles size={16} className="text-purple-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold text-purple-300 block mb-0.5">Narrative Callback Opportunity</span>
-              <p className="text-purple-200/90">{storyOpportunity}</p>
+          <div className="bg-purple-950/50 border border-purple-500/40 text-purple-200 text-xs p-3 rounded-xl backdrop-blur-md flex items-start justify-between gap-2.5">
+            <div className="flex items-start gap-2.5">
+              <Sparkles size={16} className="text-purple-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold text-purple-300 block mb-0.5">Narrative Callback Opportunity</span>
+                <p className="text-purple-200/90">{storyOpportunity}</p>
+              </div>
             </div>
+            {onTriggerRetry && (
+              <button
+                onClick={() => onTriggerRetry(storyOpportunity)}
+                className="text-[10px] bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 px-2.5 py-1 rounded-lg font-bold shrink-0"
+              >
+                Practice
+              </button>
+            )}
           </div>
         )}
 
         {witOpportunity && (
-          <div className="bg-amber-950/50 border border-amber-500/40 text-amber-200 text-xs p-3 rounded-xl backdrop-blur-md flex items-start gap-2.5">
-            <Lightbulb size={16} className="text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold text-amber-300 block mb-0.5">Wit & Analogy Suggestion</span>
-              <p className="text-amber-200/90">{witOpportunity}</p>
+          <div className="bg-amber-950/50 border border-amber-500/40 text-amber-200 text-xs p-3 rounded-xl backdrop-blur-md flex items-start justify-between gap-2.5">
+            <div className="flex items-start gap-2.5">
+              <Lightbulb size={16} className="text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold text-amber-300 block mb-0.5">Wit & Analogy Suggestion</span>
+                <p className="text-amber-200/90">{witOpportunity}</p>
+              </div>
             </div>
+            {onTriggerRetry && (
+              <button
+                onClick={() => onTriggerRetry(witOpportunity)}
+                className="text-[10px] bg-amber-900/80 hover:bg-amber-800 text-amber-200 border border-amber-500/50 px-2.5 py-1 rounded-lg font-bold shrink-0"
+              >
+                Practice
+              </button>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+

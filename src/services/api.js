@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || '/api';
 const LOCAL_FALLBACK_BASE = 'http://localhost:3001/api';
 
 async function fetchWithFallback(endpointPath, options = {}) {

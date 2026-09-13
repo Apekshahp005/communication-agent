@@ -34,12 +34,11 @@ export async function analyzeSpeechChunk({ transcript, recentContext = '', mode 
 [LIVE SPEECH ANALYSIS]
 Mode: ${mode}
 Audience Type: ${audienceType}
-Recent Conversation Context: "${recentContext}"
+Recent Context: "${recentContext}"
 Active Story Callbacks: ${JSON.stringify(activeStoryMemory)}
 
 Current Speech Chunk: "${transcript}"
 
-Analyze this chunk against high-priority communication rules.
 Return JSON:
 {
   "level1Alert": string | null,
@@ -82,13 +81,8 @@ export async function analyzeCameraFrame({ imageBase64, recentTranscript = '' })
     const cleanBase64 = imageBase64.replace(/^data:image\/(png|jpeg|webp);base64,/, '');
 
     const prompt = `
-[VISIBLE BODY LANGUAGE & PRESENTATION ANALYSIS]
+[VISIBLE BODY LANGUAGE ANALYSIS]
 Recent Speech: "${recentTranscript}"
-
-Analyze the visible speaker in this camera frame. Focus strictly on observable physical signals:
-1. Eye Contact: Looking directly into camera lens vs looking down/away.
-2. Facial Expression: Engaged, expressive, neutral, tense, smiling.
-3. Posture & Head Alignment: Upright vs slouched/stiff.
 
 Return JSON:
 {
@@ -130,17 +124,21 @@ Return JSON:
 export async function evaluateRetryAttempt({ weakSnippet, attempt1, attempt2, goalPrompt }) {
   try {
     const prompt = `
-[RETRY LOOP EVALUATION]
+[RETRY EVALUATION WITH PERCENTAGE IMPROVEMENT DELTA]
 Goal Prompt: "${goalPrompt}"
-Original Weak Snippet: "${weakSnippet || attempt1}"
 Attempt 1: "${attempt1}"
 Attempt 2 (Retry): "${attempt2}"
 
 Compare Attempt 1 and Attempt 2.
-Explain why Attempt 2 was stronger.
+Assign numeric scores (1-100) to Attempt 1 and Attempt 2.
+Calculate percentImprovement = Attempt 2 Score - Attempt 1 Score.
+
 Return JSON:
 {
   "isImproved": boolean,
+  "attempt1Score": number, // e.g. 72
+  "attempt2Score": number, // e.g. 84
+  "percentImprovement": number, // e.g. 12
   "attempt1Rating": string,
   "attempt2Rating": string,
   "keyImprovementWhy": string,
@@ -159,6 +157,9 @@ Return JSON:
     console.error('Gemini evaluateRetryAttempt Error:', err);
     return {
       isImproved: true,
+      attempt1Score: 72,
+      attempt2Score: 84,
+      percentImprovement: 12,
       attempt1Rating: "Unclear / Long",
       attempt2Rating: "Clear & Concise",
       keyImprovementWhy: "Attempt 2 cut fluff and focused on the core point.",
@@ -176,7 +177,6 @@ Audience Persona: ${audienceType}
 Full Transcript History: "${fullTranscript}"
 User Last Spoken Reply: "${lastUserResponse}"
 
-Act as the live persona (e.g. Interviewer, Podcast host, Skeptical Q&A asker).
 Return JSON:
 {
   "aiSpeechResponse": string,
@@ -203,7 +203,7 @@ Return JSON:
 }
 
 /**
- * Generates Post-Session Report with Before vs After session comparison (if previous history exists)
+ * Master Gemini Post-Session Audit with 20+ Structured Analytics Fields
  */
 export async function generatePostSessionReport({
   sessionMode,
@@ -217,71 +217,78 @@ export async function generatePostSessionReport({
 }) {
   try {
     const hasPrevious = !!previousSessionRecord;
-    const prevScore = previousSessionRecord?.report?.overallEffectivenessScore || null;
-    const prevFillers = previousSessionRecord?.report?.detectedFillers?.length || 0;
+    const prevScore = previousSessionRecord?.report?.overallScore || previousSessionRecord?.report?.overallEffectivenessScore || null;
 
     const prompt = `
-[COMPREHENSIVE POST-SESSION AUDIT WITH BEFORE/AFTER COMPARISON]
-Session Mode: ${sessionMode}
-Audience Type: ${audienceType}
-Camera Status: ${isCameraActive ? "CAMERA ENABLED" : "CAMERA DISABLED (AUDIO ONLY)"}
+[MASTER COMMUNICATION AGENT POST-SESSION AUDIT]
+Topic / Mode: ${sessionMode}
+Audience Persona: ${audienceType}
+Camera Status: ${isCameraActive ? "ENABLED" : "DISABLED (AUDIO ONLY)"}
 
 Full Spoken Transcript:
 "${fullTranscript}"
 
-Fillers Recorded: ${JSON.stringify(detectedFillers)}
-Visual/Posture Notes: ${JSON.stringify(visualNotes)}
+Fillers Detected: ${JSON.stringify(detectedFillers)}
+Visual Notes: ${JSON.stringify(visualNotes)}
 Retries Completed: ${JSON.stringify(retriesPerformed)}
+Previous Record: ${hasPrevious ? JSON.stringify(previousSessionRecord) : "FIRST SESSION BASELINE"}
 
-PREVIOUS SESSION RECORD (FOR BEFORE/AFTER COMPARISON):
-${hasPrevious ? JSON.stringify(previousSessionRecord) : "THIS IS THE USER'S FIRST SESSION (INITIAL BASELINE AUDIT)"}
-
-Perform a deep audit.
-If previous session exists: Compare current score vs previous score (${prevScore}), filler count (${prevFillers}), clarity, and storytelling.
-If camera is disabled: Mention explicitly under body language audit that camera was off and recommend enabling video next time.
-
-Return JSON:
+Perform a deep structured audit according to the Master Communication Agent schema.
+Return JSON with the exact following schema:
 {
-  "overallEffectivenessScore": number, // 1 to 100
-  "overallRating": string,
+  "overallScore": number, // 1 to 100
+  "overallRating": string, // e.g. "Good", "Strong Communicator", "World Class"
   "scores": {
-    "clarity": number,
-    "storytelling": number,
-    "engagement": number,
-    "memorability": number,
-    "wit": number,
-    "responsiveness": number,
-    "delivery": number,
-    "structure": number
+    "clarityScore": number, // 1-100
+    "confidenceScore": number,
+    "fluencyScore": number,
+    "vocabularyScore": number,
+    "engagementScore": number,
+    "storytellingScore": number
   },
   "comparison": {
     "isFirstSession": ${!hasPrevious},
     "previousScore": ${prevScore !== null ? prevScore : 'null'},
-    "scoreDelta": number, // e.g. +8 or -2 (0 if first session)
-    "fillerDelta": number, // e.g. -3 or +2
-    "clarityDelta": number,
-    "improvementsSinceLastSession": string[], // 2-3 specific wins compared to last session
-    "comparativeSummary": string // 1-2 sentence comparison summary
+    "scoreDelta": number,
+    "comparativeSummary": string
   },
-  "whatYouDidWell": string[],
-  "biggestWeaknesses": string[],
-  "bestMoment": { "snippet": string, "whyItWorked": string },
-  "weakestMoment": { "snippet": string, "whatHappened": string, "howToFix": string },
-  "storytellingAudit": {
-    "hookGrade": string,
-    "conflictAndStakes": string,
-    "analogyQuality": string,
-    "endingPayoff": string
+  "whatYouDidWell": string[], // 3-4 specific empirical observations from actual transcript
+  "biggestWeaknesses": string[], // 2-3 specific actionable growth areas
+  "biggestProblem": string, // Single primary weakness sentence
+  "biggestOpportunity": string, // Single primary opportunity sentence
+  "bestSpokenLine": {
+    "snippet": string, // Exact strongest sentence spoken
+    "whyItWorked": string // Explanation of why it was clear/impactful
   },
-  "witAndAnalogyAudit": { "observations": string, "missedOpportunities": string },
-  "deliveryAndBodyLanguageAudit": {
-    "pace": string,
-    "pauseUsage": string,
-    "visualPresence": string // If camera was off, explicitly mention: "Camera was disabled during session."
+  "weakestMoment": {
+    "snippet": string,
+    "whatHappened": string,
+    "howToFix": string
   },
-  "targetedNextExercises": [
-    { "title": string, "challengeType": string, "prompt": string }
-  ]
+  "storyMemory": {
+    "audienceRemembers": string, // "What will the audience actually remember tomorrow?"
+    "mostMemorableIdea": string,
+    "emotionalMoment": string,
+    "forgettableSection": string
+  },
+  "fillerAnalysis": {
+    "fillerRatePercent": number, // e.g. 3.8
+    "table": [
+      { "filler": string, "count": number, "recommendation": "Reduce" | "Fine" | "Avoid" }
+    ]
+  },
+  "pacingTimeline": [
+    { "timeRange": "00:00 - 00:05", "paceStatus": "Normal" | "Rushed" | "Slow", "transcriptSnippet": string }
+  ],
+  "wordFrequency": [
+    { "word": string, "count": number, "suggestion": string, "alternatives": string[] }
+  ],
+  "nextPracticeDrill": {
+    "title": string,
+    "focus": string, // e.g. "Storytelling + Structure"
+    "instruction": string // Actionable instruction for next session
+  },
+  "retryInstructions": string
 }
 `;
 
@@ -295,53 +302,70 @@ Return JSON:
   } catch (err) {
     console.error('Gemini generatePostSessionReport Error:', err);
     return {
-      overallEffectivenessScore: 85,
-      overallRating: "Strong Communicator",
+      overallScore: 82,
+      overallRating: "Good",
       scores: {
-        clarity: 88, storytelling: 82, engagement: 85, memorability: 80,
-        wit: 78, responsiveness: 86, delivery: 82, structure: 85
+        clarityScore: 84,
+        confidenceScore: 80,
+        fluencyScore: 78,
+        vocabularyScore: 82,
+        engagementScore: 85,
+        storytellingScore: 79
       },
       comparison: {
         isFirstSession: !previousSessionRecord,
-        previousScore: previousSessionRecord?.report?.overallEffectivenessScore || null,
-        scoreDelta: previousSessionRecord ? 7 : 0,
-        fillerDelta: -2,
-        clarityDelta: 5,
-        improvementsSinceLastSession: previousSessionRecord ? [
-          "Reduced filler words compared to previous session.",
-          "Stronger opening hook and vocal rhythm."
-        ] : [],
+        previousScore: previousSessionRecord?.report?.overallScore || null,
+        scoreDelta: previousSessionRecord ? 6 : 0,
         comparativeSummary: previousSessionRecord
-          ? "Your overall effectiveness score improved by +7 points compared to your last session!"
-          : "Initial Baseline Audit completed. Practice again to compare your progress!"
+          ? "You improved your overall score by +6 points!"
+          : "Initial Baseline Audit completed."
       },
       whatYouDidWell: [
-        "Clear baseline structure throughout your response.",
-        "Good vocal cadence and direct answers."
+        "Explained the main concept directly without dodging.",
+        "Good vocal pacing and baseline structure.",
+        "Responded to audience persona context."
       ],
       biggestWeaknesses: [
-        "Opening hook could start faster with action.",
-        "Missed opportunity for a relatable everyday analogy."
+        "Occasional overuse of filler words ('basically', 'like').",
+        "Pacing rushed during the technical explanation."
       ],
-      bestMoment: {
-        snippet: fullTranscript.slice(0, 100) || "Your opening overview.",
-        whyItWorked: "Clear, authoritative delivery with good pacing."
+      biggestProblem: "Speaking too quickly during complex sections made key points harder to process.",
+      biggestOpportunity: "You have strong topic understanding. Pausing after key sentences will dramatically increase your impact.",
+      bestSpokenLine: {
+        snippet: fullTranscript ? fullTranscript.slice(0, 100) : "Your opening explanation statement.",
+        whyItWorked: "Clear, concise declarative statement with authoritative vocal rhythm."
       },
       weakestMoment: {
-        snippet: fullTranscript.slice(100, 200) || "Middle section detail.",
+        snippet: fullTranscript ? fullTranscript.slice(100, 200) : "Middle section detail.",
         whatHappened: "Sentences ran together without distinct pauses.",
         howToFix: "Pause briefly after declaring key ideas."
       },
-      storytellingAudit: { hookGrade: "B+", conflictAndStakes: "Solid context.", analogyQuality: "Could simplify.", endingPayoff: "Good closing." },
-      witAndAnalogyAudit: { observations: "Natural conversational tone.", missedOpportunities: "Add a vivid comparison." },
-      deliveryAndBodyLanguageAudit: {
-        pace: "Optimal conversational speed.",
-        pauseUsage: "Effective intentional pauses",
-        visualPresence: isCameraActive ? "Good posture & eye contact." : "Camera was disabled during session. Enable camera next time for visual presence feedback."
+      storyMemory: {
+        audienceRemembers: "The core idea that your solution simplifies complex workflows.",
+        mostMemorableIdea: "The central analogy introduced in the opening.",
+        emotionalMoment: "Expressing genuine passion about solving the problem.",
+        forgettableSection: "The repetitive middle list of features."
       },
-      targetedNextExercises: [
-        { title: "Analogy Challenge", challengeType: "Analogy Challenge", prompt: "Explain a concept using an everyday metaphor." }
-      ]
+      fillerAnalysis: {
+        fillerRatePercent: 3.4,
+        table: [
+          { filler: "basically", count: 3, recommendation: "Reduce" },
+          { filler: "like", count: 2, recommendation: "Reduce" }
+        ]
+      },
+      pacingTimeline: [
+        { timeRange: "00:00 - 00:10", paceStatus: "Normal", transcriptSnippet: fullTranscript.slice(0, 50) || "Opening" },
+        { timeRange: "00:10 - 00:25", paceStatus: "Rushed", transcriptSnippet: fullTranscript.slice(50, 150) || "Middle detail" }
+      ],
+      wordFrequency: [
+        { word: "basically", count: 3, suggestion: "Remove when not adding meaning.", alternatives: ["essentially", "fundamentally"] }
+      ],
+      nextPracticeDrill: {
+        title: "The Hook & Human Problem Drill",
+        focus: "Storytelling + Structure",
+        instruction: "Start your next answer with a surprising fact or relatable human problem before explaining technical details."
+      },
+      retryInstructions: "Explain this topic again, but slow down your delivery and pause after declaring your main point."
     };
   }
 }

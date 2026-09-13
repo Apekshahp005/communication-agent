@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CameraFeed from './CameraFeed';
 import AudioWaveform from './AudioWaveform';
-import LiveTranscriptBox from './LiveTranscriptBox';
+import InteractiveTranscript from './InteractiveTranscript';
 import LiveAnalysisHUD from './LiveAnalysisHUD';
+import LiveMetricsHUD from './LiveMetricsHUD';
 import MicroFeedbackHUD from './MicroFeedbackHUD';
 import RetryModal from './RetryModal';
 import { CameraManager } from '../../services/cameraManager';
@@ -10,13 +11,15 @@ import { SpeechRecognitionService } from '../../services/speechRecognition';
 import { AudioAnalyzerService } from '../../services/audioAnalyzer';
 import { analyzeSpeechChunk, analyzeCameraFrame, generateAdaptiveResponse } from '../../services/api';
 import { ttsService } from '../../services/textToSpeech';
-import { Play, Square, Award, Sparkles, Volume2, VolumeX, MessageSquare, CameraOff, Video } from 'lucide-react';
+import { Play, Square, Award, Sparkles, Volume2, VolumeX, MessageSquare, CameraOff, Video, Brain } from 'lucide-react';
 
 export default function StudioView({
   currentMode,
   audienceType,
   onFinishSession,
-  activeChallenge
+  activeChallenge,
+  currentTopic,
+  onWordClick
 }) {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(true);
@@ -125,7 +128,7 @@ export default function StudioView({
       ttsService.stop();
 
       onFinishSession({
-        sessionMode: currentMode.title,
+        sessionMode: currentTopic || currentMode.title,
         audienceType,
         fullTranscript,
         wordsAnalyzed,
@@ -180,7 +183,7 @@ export default function StudioView({
         const analysis = await analyzeSpeechChunk({
           transcript: finalChunk,
           recentContext: fullTranscript.slice(-300),
-          mode: currentMode.title,
+          mode: currentTopic || currentMode.title,
           audienceType,
           activeStoryMemory: []
         });
@@ -266,22 +269,22 @@ export default function StudioView({
 
   return (
     <div className="w-full space-y-6">
-      {/* Studio Header Control Bar */}
+      {/* Studio Header Bar */}
       <div className="glass-panel p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-l-purple-500">
         <div>
           <div className="flex items-center gap-2 text-xs text-purple-400 font-mono font-semibold uppercase tracking-wider">
-            <Sparkles size={14} /> ENVIRONMENT: {currentMode.title}
+            <Sparkles size={14} /> LIVE PRACTICE STUDIO
             <span className="text-slate-600">•</span>
             <span className={isCameraActive ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold flex items-center gap-1'}>
               {isCameraActive ? <Video size={13} /> : <CameraOff size={13} />}
               Video {isCameraActive ? 'Active' : 'OFF (Audio-Only)'}
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-white mt-1">
-            {activeChallenge ? activeChallenge.title : `${currentMode.title} Live Studio`}
+          <h2 className="text-xl md:text-2xl font-bold text-white mt-1 flex items-center gap-2">
+            <Brain className="text-purple-400" size={24} /> "{currentTopic || currentMode.title}"
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Audience Persona: <span className="text-cyan-300 font-semibold capitalize">{audienceType}</span>
+            Mode: <span className="text-slate-300 font-semibold">{currentMode.title}</span> | Audience: <span className="text-cyan-300 font-semibold capitalize">{audienceType}</span>
             {activeChallenge && <span className="ml-2 text-amber-300">| {activeChallenge.prompt}</span>}
           </p>
         </div>
@@ -325,6 +328,18 @@ export default function StudioView({
         </div>
       </div>
 
+      {/* Live Metrics HUD (WPM, Fillers, Pause, Live Waveform, Voice Status, AI Attention) */}
+      {isSessionActive && (
+        <LiveMetricsHUD
+          wpm={wpm}
+          fillers={fillers}
+          pauseInfo={pauseInfo}
+          volume={volume}
+          isMicActive={isMicActive}
+          powerWordsCount={powerWords.length}
+        />
+      )}
+
       {/* Adaptive AI Persona Response Box */}
       {aiSpeechResponse && isSessionActive && (
         <div className="bg-gradient-to-r from-purple-950/90 via-indigo-900/80 to-slate-950/90 border-2 border-purple-500/60 p-4 rounded-2xl shadow-xl space-y-1.5 animate-slide-up">
@@ -361,9 +376,14 @@ export default function StudioView({
         level2Toasts={level2Toasts}
         storyOpportunity={storyOpportunity}
         witOpportunity={witOpportunity}
+        onTriggerRetry={(promptText) => {
+          setRetrySnippet(fullTranscript.slice(-150) || promptText);
+          setRetryPrompt(promptText);
+          setIsRetryOpen(true);
+        }}
       />
 
-      {/* Camera Feed & Live Transcript */}
+      {/* Camera Feed & Interactive Transcript Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="space-y-4">
           <CameraFeed
@@ -382,16 +402,14 @@ export default function StudioView({
         </div>
 
         <div>
-          <LiveTranscriptBox
+          <InteractiveTranscript
             fullTranscript={fullTranscript}
             interimTranscript={interimTranscript}
-            wordsAnalyzed={wordsAnalyzed}
-            fillers={fillers}
-            powerWords={powerWords}
-            jargon={jargon}
-            vague={vague}
             wpm={wpm}
             totalWords={totalWords}
+            fillers={fillers}
+            powerWords={powerWords}
+            onWordClick={onWordClick}
           />
         </div>
       </div>
