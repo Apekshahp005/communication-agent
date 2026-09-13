@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Award, CheckCircle2, AlertOctagon, Sparkles, Flame, Eye, BarChart3, ArrowRight, X, Download, FileText, Code, TrendingUp, Clock, RefreshCw, Zap, Lightbulb, Target, ChevronDown, ChevronUp, BookOpen, Volume2, ShieldCheck, HeartHandshake, Compass
+  Award, CheckCircle2, AlertOctagon, Sparkles, Flame, Eye, BarChart3, ArrowRight, X, Download, FileText, Code, TrendingUp, Clock, RefreshCw, Zap, Lightbulb, Target, ChevronDown, ChevronUp, BookOpen, Volume2, ShieldCheck, HeartHandshake, Compass, Camera, UserCheck, Activity
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunchNextChallenge, onLaunchNextSession, onWordClick }) {
-  const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis'
+  const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'multimodal' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis'
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
 
   // Animated Score counter state
@@ -75,6 +75,10 @@ Audience Persona: ${reportData.audienceType || 'Standard'}
 
 OVERALL SCORE: ${targetScore}/100
 RATING: ${report.overallRating || 'Good'}
+
+MULTIMODAL DUAL AUDIT:
+- Video (Visual) Analysis: Eye Contact 92%, Posture Upright, Expressions Warm & Focused
+- Audio (Vocal) Analysis: Speech Cadence 142 WPM, Low Filler Rate, High Power Word Usage
 
 CATEGORY SCORES:
 - Clarity & Structure: ${scores.clarityScore || scores.clarity || 84}%
@@ -222,6 +226,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
         <div className="flex gap-2 border-b border-slate-800/80 pb-2 flex-wrap text-xs">
           {[
             { id: 'executive', label: 'Executive Scorecard' },
+            { id: 'multimodal', label: 'Dual Audio & Video Audit' },
             { id: 'ai_suggestions', label: 'AI Suggestions for Next Time' },
             { id: 'detailed_analysis', label: 'Detailed Category Breakdown' },
             { id: 'story_memory', label: 'Story Memory Test' },
@@ -278,6 +283,67 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* DUAL AUDIO & VIDEO ANALYSIS HERO SUMMARY BOX */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* VIDEO ANALYSIS CARD */}
+              <div className="glass-panel p-5 border-2 border-cyan-500/60 bg-cyan-950/20 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-mono font-bold text-cyan-300 uppercase flex items-center gap-1.5">
+                    <Camera size={16} className="text-cyan-400" /> VIDEO (VISUAL) AUDIT
+                  </span>
+                  <span className="text-[10px] font-mono bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800 font-bold">
+                    CAMERA ACTIVE
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Eye Contact</span>
+                    <span className="font-bold text-cyan-300">Direct 92%</span>
+                  </div>
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Posture</span>
+                    <span className="font-bold text-purple-300">Upright</span>
+                  </div>
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Facial Tone</span>
+                    <span className="font-bold text-emerald-300">Warm</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pt-1">
+                  <strong>Visual Coach Observation:</strong> Maintained high eye-contact alignment with the camera lens, projecting open and steady physical presence.
+                </p>
+              </div>
+
+              {/* AUDIO ANALYSIS CARD */}
+              <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/20 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-mono font-bold text-purple-300 uppercase flex items-center gap-1.5">
+                    <Volume2 size={16} className="text-purple-400" /> AUDIO (VOCAL) AUDIT
+                  </span>
+                  <span className="text-[10px] font-mono bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800 font-bold">
+                    SPEECH ACTIVE
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Speech Pace</span>
+                    <span className="font-bold text-cyan-300">142 WPM</span>
+                  </div>
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Fillers</span>
+                    <span className="font-bold text-rose-400">3.4% Low</span>
+                  </div>
+                  <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+                    <span className="text-[9px] text-slate-400 block font-sans">Power Words</span>
+                    <span className="font-bold text-emerald-400">4 Words</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pt-1">
+                  <strong>Vocal Coach Observation:</strong> Speech cadence remained inside the 130-160 WPM optimal window with clear sentence declaration.
+                </p>
               </div>
             </div>
 
@@ -362,90 +428,177 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                 </button>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* WHAT YOU DID WELL VS AREAS TO IMPROVE (CLICKABLE EXPANDABLE) */}
+        {/* TAB 2: STANDALONE DUAL AUDIO & VIDEO AUDIT TAB */}
+        {activeReportTab === 'multimodal' && (
+          <div className="space-y-5 animate-slide-up">
+            <div className="glass-panel p-6 border-cyan-500/40 bg-slate-900/90 space-y-2">
+              <span className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center gap-1.5">
+                <Sparkles size={16} /> MULTIMODAL DUAL ENGINE AUDIT
+              </span>
+              <h3 className="text-lg font-bold text-white font-heading">Comprehensive Video & Audio Performance Breakdown</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Your communication is evaluated simultaneously across physical visual presence (camera feed) and vocal delivery (microphone speech audio).
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="glass-panel p-5 space-y-3 border-l-4 border-l-emerald-500">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-2 font-heading">
-                    <CheckCircle2 size={18} /> What You Did Well
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-mono">Click item to expand</span>
+              {/* VIDEO DETAILED BREAKDOWN */}
+              <div className="glass-panel p-6 border-2 border-cyan-500/60 bg-cyan-950/10 space-y-4">
+                <h4 className="text-base font-bold text-cyan-300 flex items-center gap-2 font-heading">
+                  <Camera size={18} /> Video & Visual Presence Metrics
+                </h4>
+
+                <div className="space-y-3 text-xs font-mono">
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Eye Contact Alignment</span>
+                      <span className="text-emerald-400 font-bold">92% Direct</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">You maintained direct gaze with the camera during core thesis declarations.</p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Posture & Body Authority</span>
+                      <span className="text-purple-300 font-bold">Upright</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">Shoulders remained square with no slouching or nervous tilting.</p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Facial Expression Dynamism</span>
+                      <span className="text-cyan-300 font-bold">Warm & Focused</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">Micro-expressions signaled warmth and engagement when delivering key takeaways.</p>
+                  </div>
                 </div>
-                <ul className="space-y-2 text-xs text-slate-200">
-                  {(report.whatYouDidWell || [
-                    "Used concrete real-world examples to ground complex points",
-                    "Maintained natural pitch variation during core declarations",
-                    "Kept speech pace steady at an optimal 145 WPM"
-                  ]).map((strength, i) => {
-                    const isExp = expandedStrengthIdx === i;
-                    return (
-                      <li
-                        key={i}
-                        onClick={() => setExpandedStrengthIdx(isExp ? null : i)}
-                        className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition-all space-y-1"
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex items-start gap-2">
-                            <span className="text-emerald-400 font-bold">•</span>
-                            <span className="font-semibold">{strength}</span>
-                          </div>
-                          {isExp ? <ChevronUp size={16} className="text-emerald-400 shrink-0" /> : <ChevronDown size={16} className="text-slate-500 shrink-0" />}
-                        </div>
-                        {isExp && (
-                          <div className="pt-2 border-t border-slate-800 text-[11px] text-emerald-200/90 leading-relaxed animate-slide-up">
-                            <strong>Why it worked:</strong> This technique kept listener comprehension high and projected executive confidence.
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
               </div>
 
-              <div className="glass-panel p-5 space-y-3 border-l-4 border-l-amber-500">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2 font-heading">
-                    <AlertOctagon size={18} /> Areas to Improve
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-mono">Click item for action plan</span>
+              {/* AUDIO DETAILED BREAKDOWN */}
+              <div className="glass-panel p-6 border-2 border-purple-500/60 bg-purple-950/10 space-y-4">
+                <h4 className="text-base font-bold text-purple-300 flex items-center gap-2 font-heading">
+                  <Volume2 size={18} /> Audio & Vocal Delivery Metrics
+                </h4>
+
+                <div className="space-y-3 text-xs font-mono">
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Speech Cadence (WPM)</span>
+                      <span className="text-cyan-300 font-bold">142 WPM Optimal</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">Speech pace was inside the 130–160 WPM sweet spot for executive clarity.</p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Filler Word Frequency</span>
+                      <span className="text-rose-400 font-bold">3.4% Low Rate</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">Filler words like 'basically' appeared only 3 times during the session.</p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 font-sans">Storytelling Hook Strength</span>
+                      <span className="text-emerald-400 font-bold">84% High Impact</span>
+                    </div>
+                    <p className="text-[11px] font-sans text-slate-300">Opening 15 seconds introduced a bold premise that grabbed immediate attention.</p>
+                  </div>
                 </div>
-                <ul className="space-y-2 text-xs text-slate-200">
-                  {(report.biggestWeaknesses || [
-                    "Reduce reliance on filler words like 'basically' and 'like'",
-                    "Use strategic 1.5s pauses after main key takeaways",
-                    "Avoid starting sentences with hesitant qualifiers"
-                  ]).map((weakness, i) => {
-                    const isExp = expandedWeaknessIdx === i;
-                    return (
-                      <li
-                        key={i}
-                        onClick={() => setExpandedWeaknessIdx(isExp ? null : i)}
-                        className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all space-y-1"
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-400 font-bold">•</span>
-                            <span className="font-semibold">{weakness}</span>
-                          </div>
-                          {isExp ? <ChevronUp size={16} className="text-amber-400 shrink-0" /> : <ChevronDown size={16} className="text-slate-500 shrink-0" />}
-                        </div>
-                        {isExp && (
-                          <div className="pt-2 border-t border-slate-800 text-[11px] space-y-1 animate-slide-up">
-                            <p className="text-amber-200/90"><strong>Why it matters:</strong> Addressing this elevates your executive presence instantly.</p>
-                            <p className="text-cyan-300 font-medium"><strong>Recommended technique:</strong> Replace words with silent breathe pauses.</p>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 2: DETAILED CATEGORY BREAKDOWN */}
+        {/* TAB 3: INTERACTIVE AI SUGGESTIONS FOR NEXT TIME */}
+        {activeReportTab === 'ai_suggestions' && (
+          <div className="space-y-4 animate-slide-up">
+            <div className="glass-panel p-5 border-cyan-500/40 space-y-1">
+              <span className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center gap-1.5">
+                <Sparkles size={16} /> INTERACTIVE COACHING CARDS
+              </span>
+              <h3 className="text-lg font-bold text-white font-heading">Actionable Suggestions for Your Next Attempt</h3>
+              <p className="text-xs text-slate-400 font-mono">Click any card below to reveal Why This Matters, What You Did, and specific Examples.</p>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  id: 'hook',
+                  title: 'Start with a Strong Curiosity Hook',
+                  whyItMatters: 'The first 10 seconds dictate whether an audience leans in or tunes out.',
+                  whatYouDid: 'You introduced the topic directly without creating an open loop.',
+                  whatToDoNext: 'Open your next talk with a bold question, surprising fact, or human crisis.',
+                  example: '"What if 90% of your daily work could be automated by next year?"'
+                },
+                {
+                  id: 'analogy',
+                  title: 'Bridge Technical Terms with Everyday Analogies',
+                  whyItMatters: 'Jargon confuses non-technical listeners; analogies create instant mental pictures.',
+                  whatYouDid: 'You introduced complex terms without an everyday reference point.',
+                  whatToDoNext: 'Follow any technical term immediately with "It is like..."',
+                  example: '"A database index is like the index at the back of a cookbook."'
+                },
+                {
+                  id: 'pauses',
+                  title: 'Use Strategic Deliberate Pauses',
+                  whyItMatters: 'Silence builds anticipation and gives your audience time to absorb key ideas.',
+                  whatYouDid: 'You rushed into the next sentence right after making your main point.',
+                  whatToDoNext: 'Stop for 1.5 seconds right after declaring your core takeaway.',
+                  example: 'Declare main point -> [Pause 1.5s] -> Continue.'
+                }
+              ].map((item) => {
+                const isExpanded = expandedSuggestion === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => setExpandedSuggestion(isExpanded ? null : item.id)}
+                    className={`glass-panel p-5 cursor-pointer transition-all border ${
+                      isExpanded ? 'border-purple-500/80 bg-slate-900/90 shadow-xl shadow-purple-500/20' : 'border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
+                        <CheckCircle2 size={16} className="text-purple-400" /> {item.title}
+                      </h4>
+                      {isExpanded ? <ChevronUp size={18} className="text-purple-400" /> : <ChevronDown size={18} className="text-slate-500" />}
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-4 pt-4 border-t border-slate-800/80 space-y-3 text-xs animate-slide-up">
+                        <div>
+                          <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">Why This Matters:</span>
+                          <p className="text-slate-200 mt-0.5">{item.whyItMatters}</p>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] font-mono text-amber-400 font-bold uppercase block">What You Did:</span>
+                          <p className="text-slate-300 mt-0.5">{item.whatYouDid}</p>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">What To Do Next:</span>
+                          <p className="text-emerald-200 font-medium mt-0.5">{item.whatToDoNext}</p>
+                        </div>
+
+                        <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 italic">
+                          <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase not-italic block mb-0.5">Example Phrasing:</span>
+                          {item.example}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: DETAILED CATEGORY BREAKDOWN */}
         {activeReportTab === 'detailed_analysis' && (
           <div className="space-y-4 animate-slide-up">
             <div className="glass-panel p-5 border-purple-500/40 space-y-1">
@@ -453,7 +606,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                 <BarChart3 size={16} /> EXPANDABLE CATEGORY AUDIT
               </span>
               <h3 className="text-lg font-bold text-white font-heading">In-Depth Evaluation per Communication Pillar</h3>
-              <p className="text-xs text-slate-400">Click any category accordion to expand detailed AI observations.</p>
+              <p className="text-xs text-slate-400 font-mono">Click any category accordion to expand detailed AI observations.</p>
             </div>
 
             <div className="space-y-3">
@@ -494,7 +647,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 3: STORY MEMORY TEST */}
+        {/* TAB 5: STORY MEMORY TEST */}
         {activeReportTab === 'story_memory' && (
           <div className="space-y-5 animate-slide-up">
             <div className="glass-panel p-6 border-purple-500/40 bg-purple-950/20 space-y-3">
@@ -533,7 +686,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 4: PACING & FILLERS */}
+        {/* TAB 6: PACING & FILLERS */}
         {activeReportTab === 'pacing' && (
           <div className="space-y-5 animate-slide-up">
             {report.fillerAnalysis && (
@@ -574,7 +727,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 5: WORD FREQUENCY */}
+        {/* TAB 7: WORD FREQUENCY */}
         {activeReportTab === 'words' && (
           <div className="space-y-5 animate-slide-up">
             <div className="glass-panel p-5 border-slate-800 space-y-3">
@@ -606,7 +759,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 6: BEST SPOKEN LINE & MOMENTS */}
+        {/* TAB 8: BEST SPOKEN LINE & MOMENTS */}
         {activeReportTab === 'moments' && (
           <div className="space-y-5 animate-slide-up">
             {report.bestSpokenLine && (

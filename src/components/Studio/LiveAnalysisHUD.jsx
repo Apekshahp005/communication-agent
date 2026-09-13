@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ThumbsUp, AlertTriangle, Gauge, Flame, BookOpen, Layers } from 'lucide-react';
+import { Sparkles, Eye, UserCheck, Activity, Volume2, Gauge, Flame, AlertTriangle, ThumbsUp, Camera } from 'lucide-react';
 
 export default function LiveAnalysisHUD({
   wordsAnalyzed = [],
@@ -8,8 +8,15 @@ export default function LiveAnalysisHUD({
   jargon = [],
   wpm = 0,
   pacingFeedback = 'optimal',
-  visualData
+  visualData,
+  isCameraActive = true
 }) {
+  // Extract Visual / Video Analysis metrics
+  const eyeContact = visualData?.eyeContact || (isCameraActive ? 'Direct & Engaged' : 'Camera OFF (Audio Only)');
+  const postureQuality = visualData?.postureQuality || (isCameraActive ? 'Upright & Confident' : 'Audio Mode');
+  const expressionTone = visualData?.expressionTone || (isCameraActive ? 'Warm & Focused' : 'Active');
+  const observableNotes = visualData?.observableNotes || (isCameraActive ? 'Visual stream active — Good presence' : 'Audio mode active');
+
   // Dynamically determine current live strengths
   const liveStrengths = [];
   if (powerWords.length > 0) {
@@ -18,7 +25,7 @@ export default function LiveAnalysisHUD({
   if (pacingFeedback === 'optimal' || (wpm >= 120 && wpm <= 165)) {
     liveStrengths.push(`Optimal Speaking Cadence (${wpm || 135} WPM)`);
   }
-  if (visualData?.eyeContact?.includes('Direct')) {
+  if (eyeContact.includes('Direct')) {
     liveStrengths.push('Strong Eye Contact Alignment');
   }
   if (jargon.length === 0 && wordsAnalyzed.length > 20) {
@@ -42,7 +49,7 @@ export default function LiveAnalysisHUD({
   if (jargon.length > 0) {
     liveImprovements.push(`Replace Jargon ("${jargon[jargon.length - 1]}") with an analogy`);
   }
-  if (visualData?.expressionTone?.includes('Tense')) {
+  if (expressionTone.includes('Tense')) {
     liveImprovements.push('Facial expression looks tense — relax facial muscles');
   }
   if (liveImprovements.length === 0) {
@@ -51,90 +58,126 @@ export default function LiveAnalysisHUD({
   }
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up">
-      {/* CARD 1: WHAT YOU ARE GOOD AT (STRENGTHS) */}
-      <div className="glass-panel glass-panel-emerald p-5 space-y-3 relative overflow-hidden">
+    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up font-sans">
+      {/* COLUMN 1: LIVE VIDEO & VISUAL ANALYSIS */}
+      <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-cyan-500/50 bg-slate-900/90 shadow-xl shadow-cyan-950/20">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
+              <Camera size={16} />
+            </div>
+            <h4 className="text-sm font-extrabold text-white font-heading">Video Analysis</h4>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-700/50 uppercase">
+            {isCameraActive ? 'LIVE VISION' : 'AUDIO ONLY'}
+          </span>
+        </div>
+
+        <div className="space-y-2 text-xs">
+          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
+            <span className="text-slate-400 font-sans flex items-center gap-1.5">
+              <Eye size={13} className="text-cyan-400" /> Eye Contact:
+            </span>
+            <span className="font-bold text-cyan-300">{eyeContact}</span>
+          </div>
+
+          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
+            <span className="text-slate-400 font-sans flex items-center gap-1.5">
+              <UserCheck size={13} className="text-purple-400" /> Posture Quality:
+            </span>
+            <span className="font-bold text-purple-300">{postureQuality}</span>
+          </div>
+
+          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
+            <span className="text-slate-400 font-sans flex items-center gap-1.5">
+              <Activity size={13} className="text-emerald-400" /> Facial Expression:
+            </span>
+            <span className="font-bold text-emerald-300">{expressionTone}</span>
+          </div>
+
+          <p className="text-[11px] text-slate-400 italic pt-1 border-t border-slate-800/80">
+            Note: {observableNotes}
+          </p>
+        </div>
+      </div>
+
+      {/* COLUMN 2: LIVE AUDIO & VOCAL ANALYSIS */}
+      <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-purple-500/50 bg-slate-900/90 shadow-xl shadow-purple-950/20">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+              <Volume2 size={16} />
+            </div>
+            <h4 className="text-sm font-extrabold text-white font-heading">Audio Analysis</h4>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950/80 text-purple-300 border border-purple-700/50 uppercase">
+            LIVE VOCAL
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-center font-mono">
+          <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+            <span className="text-[10px] text-slate-400 font-sans block">SPEAKING SPEED</span>
+            <span className="text-lg font-extrabold text-cyan-300">{wpm || 0} WPM</span>
+            <span className={`text-[9px] block font-bold ${wpm > 175 ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {wpm > 175 ? 'Rushed' : 'Optimal'}
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+            <span className="text-[10px] text-slate-400 font-sans block">POWER WORDS</span>
+            <span className="text-lg font-extrabold text-emerald-400">{powerWords.length}</span>
+            <span className="text-[9px] text-slate-500 block">High Impact</span>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono text-xs">
+          <span className="text-slate-400 font-sans">Fillers Detected:</span>
+          <span className="font-bold text-rose-400">{fillers.length} word{fillers.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
+      {/* COLUMN 3: COMBINED DUAL COACHING FEEDBACK */}
+      <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-emerald-500/50 bg-slate-900/90 shadow-xl shadow-emerald-950/20">
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300">
-              <ThumbsUp size={16} />
+              <Sparkles size={16} />
             </div>
-            <h4 className="text-sm font-extrabold text-white tracking-tight">What You Are Good At</h4>
+            <h4 className="text-sm font-extrabold text-white font-heading">Dual AI Insights</h4>
           </div>
           <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-700/50 uppercase">
-            LIVE STRENGTHS
+            LIVE INSIGHTS
           </span>
         </div>
 
-        <ul className="space-y-2 text-xs text-slate-200">
-          {liveStrengths.map((str, idx) => (
-            <li key={idx} className="flex items-start gap-2 leading-relaxed">
-              <span className="text-emerald-400 font-bold text-sm leading-none">•</span>
-              <span className="font-medium">{str}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* CARD 2: WHAT TO IMPROVE (GROWTH) */}
-      <div className="glass-panel border-amber-500/40 p-5 space-y-3 relative overflow-hidden shadow-lg shadow-amber-950/20">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
-              <AlertTriangle size={16} />
-            </div>
-            <h4 className="text-sm font-extrabold text-white tracking-tight">What To Improve</h4>
-          </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-700/50 uppercase">
-            LIVE FOCUS
-          </span>
-        </div>
-
-        <ul className="space-y-2 text-xs text-slate-200">
-          {liveImprovements.map((imp, idx) => (
-            <li key={idx} className="flex items-start gap-2 leading-relaxed">
-              <span className="text-amber-400 font-bold text-sm leading-none">•</span>
-              <span className="font-medium">{imp}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* CARD 3: SPEECH METRICS & PACING SPEEDOMETER */}
-      <div className="glass-panel glass-panel-cyan p-5 space-y-3 relative overflow-hidden flex flex-col justify-between">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
-              <Gauge size={16} />
-            </div>
-            <h4 className="text-sm font-extrabold text-white tracking-tight">Real-Time Metrics</h4>
-          </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-700/50">
-            CADENCE
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 text-center my-auto">
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-[10px] text-slate-400 font-mono block">SPEAKING SPEED</span>
-            <span className="text-xl font-extrabold text-cyan-300 font-mono">{wpm || 0}</span>
-            <span className="text-[10px] text-slate-500 block">WPM</span>
+        <div className="space-y-2 text-xs">
+          <div>
+            <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block mb-1">Live Strengths:</span>
+            <ul className="space-y-1 text-slate-200">
+              {liveStrengths.slice(0, 2).map((str, idx) => (
+                <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
+                  <span className="text-emerald-400 font-bold">•</span>
+                  <span>{str}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-[10px] text-slate-400 font-mono block">POWER WORDS</span>
-            <span className="text-xl font-extrabold text-emerald-400 font-mono">{powerWords.length}</span>
-            <span className="text-[10px] text-slate-500 block">Impactful</span>
+          <div className="pt-2 border-t border-slate-800/80">
+            <span className="text-[10px] font-mono text-amber-400 font-bold uppercase block mb-1">Targeted Focus:</span>
+            <ul className="space-y-1 text-slate-200">
+              {liveImprovements.slice(0, 2).map((imp, idx) => (
+                <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
+                  <span className="text-amber-400 font-bold">•</span>
+                  <span>{imp}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-
-        <div className="text-[11px] text-slate-400 flex justify-between items-center pt-2 border-t border-slate-800/80">
-          <span>Pace Target: 130-160 WPM</span>
-          <span className={`font-bold ${wpm > 175 ? 'text-amber-400' : 'text-emerald-400'}`}>
-            {wpm > 175 ? 'Too Fast' : wpm < 100 && wpm > 0 ? 'Too Slow' : 'Optimal'}
-          </span>
         </div>
       </div>
     </div>

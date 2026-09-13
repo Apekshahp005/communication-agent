@@ -390,6 +390,19 @@ export default function StudioView({
         />
       )}
 
+      {/* Live Dual Audio & Video Multimodal Analysis Hub */}
+      {isSessionActive && (
+        <LiveAnalysisHUD
+          wordsAnalyzed={wordsAnalyzed}
+          fillers={fillers}
+          powerWords={powerWords}
+          jargon={jargon}
+          wpm={wpm}
+          visualData={visualData}
+          isCameraActive={isCameraActive}
+        />
+      )}
+
       {/* Adaptive AI Persona Response Box */}
       {aiSpeechResponse && isSessionActive && (
         <div className="bg-gradient-to-r from-purple-950/90 via-indigo-900/80 to-slate-950/90 border-2 border-purple-500/60 p-4 rounded-2xl shadow-xl space-y-1.5 animate-slide-up">
