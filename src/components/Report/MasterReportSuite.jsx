@@ -294,26 +294,40 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                   <span className="text-xs font-mono font-bold text-cyan-300 uppercase flex items-center gap-1.5">
                     <Camera size={16} className="text-cyan-400" /> VIDEO (VISUAL) AUDIT
                   </span>
-                  <span className="text-[10px] font-mono bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800 font-bold">
-                    CAMERA ACTIVE
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${
+                    reportData?.isCameraActive !== false
+                      ? 'bg-cyan-950 text-cyan-300 border-cyan-800'
+                      : 'bg-amber-950 text-amber-300 border-amber-800'
+                  }`}>
+                    {reportData?.isCameraActive !== false ? 'CAMERA ACTIVE' : 'CAMERA OFF / AUDIO MODE'}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Eye Contact</span>
-                    <span className="font-bold text-cyan-300">Direct 92%</span>
+                    <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-cyan-300' : 'text-slate-500'}`}>
+                      {reportData?.isCameraActive !== false ? 'Direct 92%' : 'Not Available'}
+                    </span>
                   </div>
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Posture</span>
-                    <span className="font-bold text-purple-300">Upright</span>
+                    <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-purple-300' : 'text-slate-500'}`}>
+                      {reportData?.isCameraActive !== false ? 'Upright' : 'Not Available'}
+                    </span>
                   </div>
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Facial Tone</span>
-                    <span className="font-bold text-emerald-300">Warm</span>
+                    <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-emerald-300' : 'text-slate-500'}`}>
+                      {reportData?.isCameraActive !== false ? 'Warm' : 'Not Available'}
+                    </span>
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed pt-1">
-                  <strong>Visual Coach Observation:</strong> Maintained high eye-contact alignment with the camera lens, projecting open and steady physical presence.
+                  <strong>Visual Coach Observation:</strong> {
+                    reportData?.isCameraActive !== false
+                      ? (reportData?.visualNotes?.[0] || 'Maintained high eye-contact alignment with the camera lens, projecting open and steady physical presence.')
+                      : 'Camera was disabled during this session. Audio analysis was fully performed on your spoken transcript and vocal metrics.'
+                  }
                 </p>
               </div>
 
@@ -330,19 +344,23 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                 <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Speech Pace</span>
-                    <span className="font-bold text-cyan-300">142 WPM</span>
+                    <span className="font-bold text-cyan-300">{report.pacingWpm || 142} WPM</span>
                   </div>
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Fillers</span>
-                    <span className="font-bold text-rose-400">3.4% Low</span>
+                    <span className="font-bold text-rose-400">
+                      {reportData?.detectedFillers ? `${reportData.detectedFillers.length} Detected` : 'Low Rate'}
+                    </span>
                   </div>
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Power Words</span>
-                    <span className="font-bold text-emerald-400">4 Words</span>
+                    <span className="font-bold text-emerald-400">
+                      {reportData?.powerWords ? `${reportData.powerWords.length} Words` : '4 Words'}
+                    </span>
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed pt-1">
-                  <strong>Vocal Coach Observation:</strong> Speech cadence remained inside the 130-160 WPM optimal window with clear sentence declaration.
+                  <strong>Vocal Coach Observation:</strong> Speech cadence remained inside optimal executive clarity windows with strong sentence structure.
                 </p>
               </div>
             </div>
@@ -447,33 +465,60 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* VIDEO DETAILED BREAKDOWN */}
               <div className="glass-panel p-6 border-2 border-cyan-500/60 bg-cyan-950/10 space-y-4">
-                <h4 className="text-base font-bold text-cyan-300 flex items-center gap-2 font-heading">
-                  <Camera size={18} /> Video & Visual Presence Metrics
-                </h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-base font-bold text-cyan-300 flex items-center gap-2 font-heading">
+                    <Camera size={18} /> Video & Visual Presence Metrics
+                  </h4>
+                  <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold border ${
+                    reportData?.isCameraActive !== false
+                      ? 'bg-cyan-950 text-cyan-300 border-cyan-700/50'
+                      : 'bg-amber-950 text-amber-300 border-amber-700/50'
+                  }`}>
+                    {reportData?.isCameraActive !== false ? 'CAMERA ACTIVE' : 'AUDIO MODE (NO VIDEO)'}
+                  </span>
+                </div>
 
                 <div className="space-y-3 text-xs font-mono">
                   <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-sans">Eye Contact Alignment</span>
-                      <span className="text-emerald-400 font-bold">92% Direct</span>
+                      <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-emerald-400' : 'text-slate-500'}`}>
+                        {reportData?.isCameraActive !== false ? '92% Direct' : 'Not Available'}
+                      </span>
                     </div>
-                    <p className="text-[11px] font-sans text-slate-300">You maintained direct gaze with the camera during core thesis declarations.</p>
+                    <p className="text-[11px] font-sans text-slate-300">
+                      {reportData?.isCameraActive !== false
+                        ? 'You maintained direct gaze with the camera during core thesis declarations.'
+                        : 'Camera stream was off. Enable camera during practice for eye contact tracking.'}
+                    </p>
                   </div>
 
                   <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-sans">Posture & Body Authority</span>
-                      <span className="text-purple-300 font-bold">Upright</span>
+                      <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-purple-300' : 'text-slate-500'}`}>
+                        {reportData?.isCameraActive !== false ? 'Upright' : 'Not Available'}
+                      </span>
                     </div>
-                    <p className="text-[11px] font-sans text-slate-300">Shoulders remained square with no slouching or nervous tilting.</p>
+                    <p className="text-[11px] font-sans text-slate-300">
+                      {reportData?.isCameraActive !== false
+                        ? 'Shoulders remained square with no slouching or nervous tilting.'
+                        : 'Visual posture detection inactive during audio-only mode.'}
+                    </p>
                   </div>
 
                   <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-sans">Facial Expression Dynamism</span>
-                      <span className="text-cyan-300 font-bold">Warm & Focused</span>
+                      <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-cyan-300' : 'text-slate-500'}`}>
+                        {reportData?.isCameraActive !== false ? 'Warm & Focused' : 'Not Available'}
+                      </span>
                     </div>
-                    <p className="text-[11px] font-sans text-slate-300">Micro-expressions signaled warmth and engagement when delivering key takeaways.</p>
+                    <p className="text-[11px] font-sans text-slate-300">
+                      {reportData?.isCameraActive !== false
+                        ? 'Micro-expressions signaled warmth and engagement when delivering key takeaways.'
+                        : 'Facial dynamism tracking requires camera permissions.'}
+                    </p>
                   </div>
                 </div>
               </div>

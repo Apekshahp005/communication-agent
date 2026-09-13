@@ -59,6 +59,8 @@ export default function App() {
         powerWords: sessionPayload.powerWords,
         detectedFillers: sessionPayload.detectedFillers,
         jargon: sessionPayload.jargon,
+        isCameraActive: sessionPayload.isCameraActive,
+        visualNotes: sessionPayload.visualNotes,
         report: fullData.report
       });
     } catch (err) {
