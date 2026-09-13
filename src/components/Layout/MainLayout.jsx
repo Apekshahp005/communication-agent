@@ -24,9 +24,9 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
             <Sparkles size={22} className="animate-pulse" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white font-heading">Antigravity</h1>
-            <p className="text-[10px] font-mono text-purple-400 font-bold tracking-wider uppercase">
-              Communication Agent
+            <h1 className="text-base font-extrabold tracking-tight text-white font-heading">AI Communication Coach</h1>
+            <p className="text-[10px] font-mono text-purple-400 font-bold tracking-wider uppercase mt-0.5">
+              Speak. Analyze. Improve.
             </p>
           </div>
         </div>
@@ -69,8 +69,8 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
             <Sparkles size={18} />
           </div>
           <div>
-            <span className="font-bold text-sm text-white font-heading block">Communication Agent</span>
-            <span className="text-[9px] font-mono text-purple-400 font-semibold block">Speak • Improve • Grow</span>
+            <span className="font-bold text-sm text-white font-heading block">AI Communication Coach</span>
+            <span className="text-[9px] font-mono text-purple-400 font-semibold block">Speak • Analyze • Improve</span>
           </div>
         </div>
 
