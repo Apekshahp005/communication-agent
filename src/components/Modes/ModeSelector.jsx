@@ -1,0 +1,159 @@
+import React from 'react';
+import {
+  Mic2, Presentation, Radio, Video, TrendingUp, Briefcase, Zap, HelpCircle, Users
+} from 'lucide-react';
+
+export const COMMUNICATION_MODES = [
+  {
+    id: 'public_speaking',
+    title: 'Public Speaking',
+    icon: Mic2,
+    badge: 'Stage & Keynote',
+    color: 'from-purple-600 to-indigo-600',
+    description: 'Simulate stage keynotes, speeches, and large audience presentations. Master hooks, opening presence, and memorable endings.',
+    promptFocus: 'opening hook, audience engagement, storytelling tension, vocal rhythm, memorable closing'
+  },
+  {
+    id: 'presentation',
+    title: 'Project Presentation',
+    icon: Presentation,
+    badge: 'Slide & Pitch',
+    color: 'from-cyan-600 to-blue-600',
+    description: 'Present an idea, slide outline, or project. Coach clarity, transitions between points, technical depth without boring the audience.',
+    promptFocus: 'clarity, slide transition, bridging complex technical ideas to simple analogies, Q&A readiness'
+  },
+  {
+    id: 'podcast',
+    title: 'Podcast Conversation',
+    icon: Radio,
+    badge: 'Natural Wit & Flow',
+    color: 'from-emerald-600 to-teal-600',
+    description: 'Simulate a spontaneous podcast interview. Train conversational storytelling, active listening, witty observations, and natural callbacks.',
+    promptFocus: 'spontaneous responses, natural wit, relatable analogies, avoiding robotic script answers'
+  },
+  {
+    id: 'video_meeting',
+    title: 'Video Meeting',
+    icon: Video,
+    badge: 'Team & Leadership',
+    color: 'from-indigo-600 to-purple-600',
+    description: 'Simulate daily team updates, project introductions, disagreeing professionally, and getting straight to the point in remote meetings.',
+    promptFocus: 'concise updates, direct problem stating, professional tone, engaging team members'
+  },
+  {
+    id: 'sales',
+    title: 'Sales & Persuasion',
+    icon: TrendingUp,
+    badge: 'Pitch & Objections',
+    color: 'from-amber-600 to-orange-600',
+    description: 'Train persuasive communication, explaining value propositions, asking strategic questions, handling tough objections, and closing confidently.',
+    promptFocus: 'value proposition, objection handling, empathy, persuasive closing, concise explanation'
+  },
+  {
+    id: 'interview',
+    title: 'Job & Technical Interview',
+    icon: Briefcase,
+    badge: 'Behavioral & Tech',
+    color: 'from-rose-600 to-pink-600',
+    description: 'AI acts as the interviewer asking behavioral, technical, and unexpected follow-up questions. No memorized scripts allowed.',
+    promptFocus: 'STAR response structure, direct answers, specific examples, confidence under pressure'
+  },
+  {
+    id: 'impromptu',
+    title: 'Impromptu Speaking',
+    icon: Zap,
+    badge: '60s Challenge',
+    color: 'from-yellow-500 to-amber-600',
+    description: 'Get random topics with immediate countdown timers. Train fast thinking, rapid structure, and clear delivery under time constraints.',
+    promptFocus: 'rapid organization, 60-second limit, immediate hook, smooth transition to conclusion'
+  },
+  {
+    id: 'audience_qa',
+    title: 'Audience Q&A',
+    icon: HelpCircle,
+    badge: '7-Step Framework',
+    color: 'from-fuchsia-600 to-purple-600',
+    description: 'AI simulates audience members asking confusing, skeptical, or aggressive questions. Practice the 7-step structured answer framework.',
+    promptFocus: 'pause & reflect, direct answer, detailed explanation, everyday example, strong closing'
+  }
+];
+
+export const AUDIENCE_TYPES = [
+  { id: 'curious listener', label: 'Curious Listener (Default)', desc: 'Eager to learn, responds to strong hooks & analogies' },
+  { id: 'skeptical audience', label: 'Skeptical & Challenging', desc: 'Questions assumptions, demands evidence & logic' },
+  { id: 'executive', label: 'Busy Executive', desc: 'Wants bottom line upfront (BLUF), zero fluff' },
+  { id: 'expert', label: 'Technical Expert', desc: 'Looks for depth, precision, and zero hand-waving' },
+  { id: 'beginner', label: 'Beginner / Non-Technical', desc: 'Needs simple terms, visual metaphors, no jargon' },
+  { id: 'bored audience', label: 'Distracted / Bored Audience', desc: 'Needs high energy, open loops, and dramatic contrast' },
+  { id: 'interviewer', label: 'Strict Interviewer', desc: 'Evaluates conciseness, honesty, and leadership presence' }
+];
+
+export default function ModeSelector({ selectedMode, onSelectMode, selectedAudience, onSelectAudience }) {
+  return (
+    <div className="w-full space-y-6">
+      {/* Audience Simulation Dropdown / Selector Bar */}
+      <div className="glass-panel p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border border-slate-800">
+        <div className="flex items-center gap-2 text-slate-300 font-semibold text-sm">
+          <Users size={18} className="text-cyan-400" />
+          <span>Simulated Audience Persona:</span>
+        </div>
+        <select
+          value={selectedAudience}
+          onChange={(e) => onSelectAudience(e.target.value)}
+          className="bg-slate-900 text-slate-200 text-sm rounded-xl px-3.5 py-2 border border-slate-700 focus:outline-none focus:border-cyan-500 font-medium w-full sm:w-auto"
+        >
+          {AUDIENCE_TYPES.map((aud) => (
+            <option key={aud.id} value={aud.id}>
+              {aud.label} — {aud.desc}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Grid of 8 Modes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {COMMUNICATION_MODES.map((mode) => {
+          const Icon = mode.icon;
+          const isSelected = selectedMode.id === mode.id;
+
+          return (
+            <div
+              key={mode.id}
+              onClick={() => onSelectMode(mode)}
+              className={`glass-panel p-5 cursor-pointer flex flex-col justify-between transition-all group ${
+                isSelected
+                  ? 'border-2 border-purple-500 shadow-xl shadow-purple-500/20 bg-slate-900/90'
+                  : 'hover:border-slate-700 hover:bg-slate-900/50'
+              }`}
+            >
+              <div>
+                <div className="flex justify-between items-start mb-3">
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${mode.color} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                    <Icon size={22} />
+                  </div>
+                  <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    {mode.badge}
+                  </span>
+                </div>
+
+                <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">
+                  {mode.title}
+                </h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  {mode.description}
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold">
+                <span className={isSelected ? 'text-purple-400' : 'text-slate-500'}>
+                  {isSelected ? 'Active Mode' : 'Select Mode'}
+                </span>
+                <span className="text-slate-600 group-hover:text-slate-400">&rarr;</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
