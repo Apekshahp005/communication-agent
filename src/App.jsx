@@ -60,8 +60,10 @@ export default function App() {
         detectedFillers: sessionPayload.detectedFillers,
         jargon: sessionPayload.jargon,
         isCameraActive: sessionPayload.isCameraActive,
+        visualData: sessionPayload.visualData,
         visualNotes: sessionPayload.visualNotes,
-        report: fullData.report
+        sessionTimeSec: sessionPayload.sessionTimeSec,
+        report: fullData?.report || null
       });
     } catch (err) {
       console.error('Error generating report:', err);

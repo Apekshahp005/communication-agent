@@ -281,6 +281,7 @@ export default function StudioView({
       detectedFillers: fillers,
       powerWords,
       jargon,
+      visualData,
       visualNotes: visualData ? [visualData.observableNotes] : [],
       retriesPerformed,
       sessionTimeSec: sessionTime,

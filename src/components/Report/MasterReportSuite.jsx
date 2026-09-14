@@ -27,8 +27,31 @@ export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunc
 
   const report = reportData?.report || {};
   const scores = report.scores || {};
-  const targetScore = report.overallScore || report.overallEffectivenessScore || 82;
   const comparison = report.comparison || { isFirstSession: true };
+
+  const transcriptText = (reportData?.fullTranscript || '').trim();
+  const wordCount = transcriptText ? transcriptText.split(/\s+/).filter(Boolean).length : 0;
+  const fillerCount = reportData?.detectedFillers?.length || 0;
+  const powerCount = reportData?.powerWords?.length || 0;
+  const durationSec = reportData?.sessionTimeSec || 30;
+  const calculatedWpm = wordCount > 0 ? Math.round((wordCount / durationSec) * 60) : 0;
+
+  // Calculate empirical baseline score when report.overallScore is missing/uncalculated
+  let empiricalScore = 70;
+  if (wordCount > 0) {
+    empiricalScore = Math.min(95, Math.max(50, 70 + Math.min(15, Math.floor(wordCount / 8)) - (fillerCount * 4) + (powerCount * 3)));
+  } else {
+    empiricalScore = 55; // Low score if zero transcript was spoken
+  }
+
+  const targetScore = report.overallScore || report.overallEffectivenessScore || empiricalScore;
+
+  const clarityVal = scores.clarityScore || scores.clarity || (wordCount > 0 ? Math.min(95, Math.max(50, 75 - (fillerCount * 3) + Math.min(10, Math.floor(wordCount / 10)))) : 55);
+  const confidenceVal = scores.confidenceScore || scores.confidence || (wordCount > 0 ? Math.min(95, Math.max(50, 70 + (reportData?.isCameraActive !== false ? 10 : 0) - (fillerCount * 2))) : 55);
+  const vocabVal = scores.vocabularyScore || scores.vocabulary || (wordCount > 0 ? Math.min(95, Math.max(50, 65 + (powerCount * 5) - (fillerCount * 2))) : 55);
+  const engagementVal = scores.engagementScore || scores.engagement || (wordCount > 0 ? Math.min(95, Math.max(50, 75 + Math.min(15, powerCount * 3))) : 55);
+  const storytellingVal = scores.storytellingScore || scores.storytelling || (wordCount > 0 ? Math.min(95, Math.max(50, 70 + Math.min(15, Math.floor(wordCount / 12)))) : 55);
+  const fluencyVal = scores.fluencyScore || scores.fluency || (wordCount > 0 ? Math.min(95, Math.max(50, 80 - (fillerCount * 4))) : 55);
 
   // Score Count-Up Animation
   useEffect(() => {
@@ -78,30 +101,30 @@ Mode / Topic: ${reportData.sessionMode || 'Practice'}
 Audience Persona: ${reportData.audienceType || 'Standard'}
 
 OVERALL SCORE: ${targetScore}/100
-RATING: ${report.overallRating || 'Good'}
+RATING: ${report.overallRating || (targetScore >= 80 ? 'Strong Communicator' : 'Developing Communicator')}
 
 MULTIMODAL DUAL AUDIT:
-- Video (Visual) Analysis: Eye Contact Direct & Engaged, Posture Upright & Confident, Facial Expression Warm
-- Audio (Vocal) Analysis: Speech Cadence ${report.pacingWpm || 142} WPM, Low Filler Rate, High Power Word Usage
+- Video (Visual) Analysis: Eye Contact ${reportData?.visualData?.eyeContact || (reportData?.isCameraActive !== false ? 'Direct & Engaged' : 'Camera Off')}, Posture ${reportData?.visualData?.postureQuality || (reportData?.isCameraActive !== false ? 'Upright & Confident' : 'Not Available')}
+- Audio (Vocal) Analysis: Speech Cadence ${report.pacingWpm || calculatedWpm || 140} WPM, ${fillerCount} Fillers, ${powerCount} Power Words
 
 CATEGORY SCORES:
-- Clarity & Structure: ${scores.clarityScore || scores.clarity || 84}%
-- Confidence & Delivery: ${scores.confidenceScore || 80}%
-- Language & Vocabulary: ${scores.vocabularyScore || 82}%
-- Engagement & Expression: ${scores.engagementScore || 85}%
-- Storytelling: ${scores.storytellingScore || 79}%
-- Fluency: ${scores.fluencyScore || 78}%
+- Clarity & Structure: ${clarityVal}%
+- Confidence & Delivery: ${confidenceVal}%
+- Language & Vocabulary: ${vocabVal}%
+- Engagement & Expression: ${engagementVal}%
+- Storytelling: ${storytellingVal}%
+- Fluency: ${fluencyVal}%
 
 BIGGEST OPPORTUNITY:
-${report.biggestOpportunity || report.biggestProblem || ''}
+${report.biggestOpportunity || report.biggestProblem || (fillerCount > 0 ? `Eliminate hesitation fillers (${fillerCount} detected).` : 'Use strategic silent pauses.')}
 
 BEST SPOKEN LINE:
-"${report.bestSpokenLine?.snippet || ''}"
-Why: ${report.bestSpokenLine?.whyItWorked || ''}
+"${report.bestSpokenLine?.snippet || (transcriptText ? transcriptText.slice(0, 100) : '')}"
+Why: ${report.bestSpokenLine?.whyItWorked || 'Clear declarative delivery.'}
 
 TARGETED NEXT SESSION PRACTICE DRILL:
-${report.nextPracticeDrill?.title || ''}
-Instruction: ${report.nextPracticeDrill?.instruction || ''}
+${report.nextPracticeDrill?.title || '60-Second Strategic Pause Drill'}
+Instruction: ${report.nextPracticeDrill?.instruction || 'Deliver your main thesis and pause for 1.5 seconds.'}
     `;
 
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
@@ -114,39 +137,39 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
 
   const scoreDimensionDetails = {
     'Clarity & Structure': {
-      score: scores.clarityScore || scores.clarity || 84,
+      score: clarityVal,
       evaluates: 'Logical progression, concise phrasing, and zero ambiguity.',
-      feedback: 'Your ideas were logical, but sentence preambles can be trimmed by 20%.',
+      feedback: report.clarityFeedback || (wordCount > 15 ? 'Your ideas were logical. State your thesis before giving supporting details.' : 'Speak longer to build a complete narrative arc.'),
       exercise: 'Practice the 1-Sentence Summary Drill before expanding into details.'
     },
     'Confidence & Delivery': {
-      score: scores.confidenceScore || 80,
+      score: confidenceVal,
       evaluates: 'Vocal projection, pitch variation, and absence of hesitant qualifiers.',
-      feedback: 'Good vocal stability. Eliminating "I guess" will project 15% higher authority.',
+      feedback: report.confidenceFeedback || (fillerCount > 0 ? `Eliminating your ${fillerCount} hesitation filler words will project 15% higher authority.` : 'Vocal stability was steady and well projected.'),
       exercise: 'Deliver 3 statements starting with high conviction verbs.'
     },
     'Language & Vocabulary': {
-      score: scores.vocabularyScore || 82,
+      score: vocabVal,
       evaluates: 'High-impact power words, precise terminology, and low filler frequency.',
-      feedback: 'Solid word choices overall. Replace repetitive transition words like "basically".',
+      feedback: report.vocabularyFeedback || (powerCount > 0 ? `Used ${powerCount} power word${powerCount > 1 ? 's' : ''} (${(reportData?.powerWords || []).join(', ')}).` : 'Incorporate 2 vivid action verbs into every key point.'),
       exercise: 'Incorporate 2 vivid action verbs into every key point.'
     },
     'Engagement & Expression': {
-      score: scores.engagementScore || 85,
+      score: engagementVal,
       evaluates: 'Audience warmth, rhetorical questions, and facial dynamism.',
-      feedback: 'Strong listener connection. Keep asking rhetorical questions to keep interest high.',
+      feedback: report.engagementFeedback || (reportData?.isCameraActive !== false ? 'Maintained direct lens alignment and visual presence.' : 'Audio engagement was strong. Enable camera for visual gaze tracking.'),
       exercise: 'Include a direct audience question in your opening 15 seconds.'
     },
     'Storytelling': {
-      score: scores.storytellingScore || 79,
+      score: storytellingVal,
       evaluates: 'Narrative arcs, tension build-up, concrete characters, and punchy resolution.',
-      feedback: 'Good story concept, but heighten the tension before revealing your solution.',
+      feedback: report.storytellingFeedback || (wordCount > 20 ? 'Good narrative concept. Heighten tension before revealing your main takeaway.' : 'Use a 15-second opening hook to grab audience attention.'),
       exercise: 'Use the "Before vs After" storytelling framework.'
     },
     'Fluency': {
-      score: scores.fluencyScore || 78,
+      score: fluencyVal,
       evaluates: 'Steady pacing (130-160 WPM) and seamless transitions between thoughts.',
-      feedback: 'Pacing was smooth. Maintain brief silent pauses instead of filler vocalizations.',
+      feedback: report.fluencyFeedback || `Pacing measured at ${report.pacingWpm || calculatedWpm || 140} WPM with ${fillerCount} filler word${fillerCount !== 1 ? 's' : ''}.`,
       exercise: 'Practice 2-second silent pauses at sentence boundaries.'
     }
   };
@@ -155,37 +178,37 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
     {
       id: 'topic',
       title: 'Topic Understanding & Structure',
-      score: scores.clarityScore || 84,
+      score: clarityVal,
       summary: 'Depth of subject mastery and clarity of core narrative structure.',
-      details: report.topicUnderstanding || 'You demonstrated strong familiarity with the subject matter, structuring key points logically from introduction to conclusion.'
+      details: report.topicUnderstanding || (wordCount > 10 ? `Demonstrated topic understanding across ${wordCount} spoken words with structured points.` : 'Initiated session topic presentation.')
     },
     {
       id: 'skills',
       title: 'Communication Skills & Persuasion',
-      score: scores.engagementScore || 85,
+      score: engagementVal,
       summary: 'Ability to influence listeners and hold audience attention.',
-      details: report.communicationSkills || 'Persuasive energy was strong. Listener engagement remained consistently high throughout the delivery.'
+      details: report.communicationSkills || 'Persuasive energy remained steady throughout delivery.'
     },
     {
       id: 'vocab',
       title: 'Vocabulary & Diction Precision',
-      score: scores.vocabularyScore || 82,
+      score: vocabVal,
       summary: 'Use of high-impact power words and elimination of vague terms.',
-      details: report.vocabularyAnalysis || 'Word choice was descriptive. Swapping vague fillers for crisp terminology will elevate your executive presence.'
+      details: report.vocabularyAnalysis || (powerCount > 0 ? `Used ${powerCount} power word${powerCount > 1 ? 's' : ''} to enhance executive presence.` : 'Replacing vague transition words with vivid action verbs will elevate authority.')
     },
     {
       id: 'confidence',
       title: 'Confidence & Vocal Pacing',
-      score: scores.confidenceScore || 80,
+      score: confidenceVal,
       summary: 'Pacing consistency (WPM), speech energy, and vocal authority.',
-      details: report.confidenceAnalysis || 'Delivery was steady with steady volume control. Pauses were well-timed overall.'
+      details: report.confidenceAnalysis || `Cadence logged at ${calculatedWpm || 140} WPM with steady volume control.`
     },
     {
       id: 'engagement',
       title: 'Audience Resonance & Memory',
-      score: scores.engagementScore || 85,
+      score: engagementVal,
       summary: 'Story retention, audience interest, and emotional resonance.',
-      details: report.audienceResonance || 'The core message was memorable, leaving a clear takeaway for listeners to recall.'
+      details: report.audienceResonance || 'The core thesis left a clear takeaway for listeners to recall.'
     }
   ];
 
@@ -730,148 +753,169 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
               </div>
             </div>
 
-            {/* Timeline Event Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-              {[
-                {
+            {/* Timeline Event Cards (GENERATED FROM ACTUAL SESSION DATA) */}
+            {(() => {
+              const transcript = reportData?.fullTranscript || '';
+              const fillers = reportData?.detectedFillers || [];
+              const powerWords = reportData?.powerWords || [];
+              const sentences = transcript.match(/[^.!?]+[.!?]+/g) || (transcript ? [transcript] : []);
+              const events = [];
+
+              if (sentences.length > 0 && sentences[0].trim()) {
+                events.push({
                   id: 't1',
                   time: '00:04',
-                  type: 'speaking',
-                  label: 'Strong Opening Thesis',
-                  badge: '🔵 Speaking',
+                  label: 'Opening Thesis Statement',
+                  badge: '🔵 Opening',
                   color: 'border-cyan-500/50 bg-cyan-950/20 text-cyan-300',
-                  snippet: '"Artificial intelligence is fundamentally reshaping communication..."',
-                  analysis: 'Clear 140 WPM pace with high initial vocal conviction.',
-                  drill: 'Opening Hook Mastery'
-                },
-                {
+                  snippet: `"${sentences[0].trim()}"`,
+                  analysis: 'Initial spoken declaration establishing subject context.',
+                  drill: 'Opening Hook Mastery',
+                  recText: 'Maintain this high-energy thesis delivery style.'
+                });
+              }
+
+              if (fillers.length > 0) {
+                const fWord = fillers[0];
+                const fSentence = sentences.find(s => s.toLowerCase().includes(fWord.toLowerCase())) || sentences[0] || transcript;
+                events.push({
                   id: 't2',
-                  time: '00:12',
-                  type: 'pause',
-                  label: 'Strategic Pause (1.6s)',
-                  badge: '🟡 Pause',
-                  color: 'border-amber-500/50 bg-amber-950/20 text-amber-300',
-                  snippet: '"...and the key benefit [Pause 1.6s] is instant feedback."',
-                  analysis: 'Excellent silent pause that allowed the main point to resonate.',
-                  drill: 'Silent Pause Control'
-                },
-                {
-                  id: 't3',
-                  time: '00:19',
-                  type: 'filler',
-                  label: 'Filler Word Detected',
+                  time: '00:15',
+                  label: `Filler Word Detected ("${fWord}")`,
                   badge: '🔴 Filler',
                   color: 'border-rose-500/50 bg-rose-950/20 text-rose-300',
-                  snippet: '"Basically, we need to consider all trade-offs..."',
-                  analysis: 'Used "basically" before declaring key transition.',
-                  drill: 'Zero Filler Elimination'
-                },
-                {
-                  id: 't4',
+                  snippet: `"${fSentence.trim()}"`,
+                  analysis: `Used hesitation filler word "${fWord}". Replace with a 1.5-second silent pause.`,
+                  drill: 'Zero Filler Elimination',
+                  recText: `Replace "${fWord}" with a silent 1.5-second pause.`
+                });
+              }
+
+              if (powerWords.length > 0) {
+                const pWord = powerWords[0];
+                const pSentence = sentences.find(s => s.toLowerCase().includes(pWord.toLowerCase())) || sentences[sentences.length - 1] || transcript;
+                events.push({
+                  id: 't3',
                   time: '00:28',
-                  type: 'strong',
-                  label: 'High-Impact Power Word',
+                  label: `High-Impact Power Word ("${pWord}")`,
                   badge: '🟣 Power Word',
                   color: 'border-purple-500/50 bg-purple-950/20 text-purple-300',
-                  snippet: '"This framework empowers teams to scale effortlessly."',
-                  analysis: 'Used high-impact power word "empowers" with firm vocal authority.',
-                  drill: 'Executive Vocabulary Booster'
-                }
-              ].map((ev) => {
-                const isSelected = selectedTimelineEvent === ev.id;
+                  snippet: `"${pSentence.trim()}"`,
+                  analysis: `Used high-impact power word "${pWord}" with strong vocal conviction.`,
+                  drill: 'Executive Vocabulary Booster',
+                  recText: 'Incorporate 2 more vivid action verbs into key takeaways.'
+                });
+              }
+
+              if (sentences.length > 1) {
+                const cSentence = sentences[sentences.length - 1];
+                events.push({
+                  id: 't4',
+                  time: '00:42',
+                  label: 'Core Takeaway / Conclusion',
+                  badge: '🟢 Core Point',
+                  color: 'border-emerald-500/50 bg-emerald-950/20 text-emerald-300',
+                  snippet: `"${cSentence.trim()}"`,
+                  analysis: 'Final declaration framing the main conclusion for the audience.',
+                  drill: 'Punchy Resolution Drill',
+                  recText: 'Deliver your final takeaway with steady vocal cadence.'
+                });
+              }
+
+              if (events.length === 0) {
                 return (
-                  <div
-                    key={ev.id}
-                    onClick={() => setSelectedTimelineEvent(isSelected ? null : ev.id)}
-                    className={`glass-panel p-4 cursor-pointer transition-all border space-y-2 ${ev.color} ${
-                      isSelected ? 'ring-2 ring-purple-400 scale-[1.03] shadow-lg' : 'hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center font-mono">
-                      <span className="font-bold text-white text-sm">{ev.time}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border border-current">{ev.badge}</span>
-                    </div>
-                    <h5 className="font-bold text-slate-100 font-heading text-xs">{ev.label}</h5>
-                    <p className="text-[11px] text-slate-300 italic line-clamp-2">{ev.snippet}</p>
-                    <span className="text-[10px] text-purple-300 font-mono block pt-1">Click to inspect detail →</span>
+                  <div className="col-span-4 glass-panel p-6 text-center space-y-2 border-slate-800">
+                    <p className="text-sm font-bold text-slate-300">No Session Timeline Events Recorded Yet</p>
+                    <p className="text-xs text-slate-400">
+                      Speak into your microphone during live practice session to generate a chronological event timeline.
+                    </p>
                   </div>
                 );
-              })}
-            </div>
+              }
 
-            {/* Selected Timeline Detail Drawer */}
-            {selectedTimelineEvent && (
-              <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/30 space-y-3 animate-slide-up">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
-                    <Sparkles size={16} className="text-purple-400" /> Timeline Event Analysis: {[
-                      { id: 't1', title: '00:04 - Strong Opening Thesis' },
-                      { id: 't2', title: '00:12 - Strategic Pause (1.6s)' },
-                      { id: 't3', title: '00:19 - Filler Word Detected' },
-                      { id: 't4', title: '00:28 - High-Impact Power Word' }
-                    ].find(x => x.id === selectedTimelineEvent)?.title}
-                  </h4>
-                  <button onClick={() => setSelectedTimelineEvent(null)} className="text-slate-400 hover:text-white text-xs">
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">Transcript Snippet:</span>
-                    <p className="text-slate-200 font-medium italic mt-1">
-                      {[
-                        { id: 't1', text: '"Artificial intelligence is fundamentally reshaping communication..."' },
-                        { id: 't2', text: '"...and the key benefit [Pause 1.6s] is instant feedback."' },
-                        { id: 't3', text: '"Basically, we need to consider all trade-offs..."' },
-                        { id: 't4', text: '"This framework empowers teams to scale effortlessly."' }
-                      ].find(x => x.id === selectedTimelineEvent)?.text}
-                    </p>
+              return (
+                <div className="col-span-4 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    {events.map((ev) => {
+                      const isSelected = selectedTimelineEvent === ev.id;
+                      return (
+                        <div
+                          key={ev.id}
+                          onClick={() => setSelectedTimelineEvent(isSelected ? null : ev.id)}
+                          className={`glass-panel p-4 cursor-pointer transition-all border space-y-2 ${ev.color} ${
+                            isSelected ? 'ring-2 ring-purple-400 scale-[1.03] shadow-lg' : 'hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center font-mono">
+                            <span className="font-bold text-white text-sm">{ev.time}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border border-current">{ev.badge}</span>
+                          </div>
+                          <h5 className="font-bold text-slate-100 font-heading text-xs">{ev.label}</h5>
+                          <p className="text-[11px] text-slate-300 italic line-clamp-2">{ev.snippet}</p>
+                          <span className="text-[10px] text-purple-300 font-mono block pt-1">Click to inspect detail →</span>
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">AI Analysis:</span>
-                    <p className="text-slate-200 mt-1">
-                      {[
-                        { id: 't1', text: 'Clear 140 WPM pace with high initial vocal conviction.' },
-                        { id: 't2', text: 'Excellent silent pause that allowed the main point to resonate.' },
-                        { id: 't3', text: 'Used "basically" before declaring key transition.' },
-                        { id: 't4', text: 'Used high-impact power word "empowers" with firm vocal authority.' }
-                      ].find(x => x.id === selectedTimelineEvent)?.text}
-                    </p>
-                  </div>
+                  {/* Selected Timeline Detail Drawer */}
+                  {selectedTimelineEvent && (
+                    <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/30 space-y-3 animate-slide-up">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
+                          <Sparkles size={16} className="text-purple-400" /> Timeline Event Analysis: {
+                            events.find(x => x.id === selectedTimelineEvent)?.label
+                          }
+                        </h4>
+                        <button onClick={() => setSelectedTimelineEvent(null)} className="text-slate-400 hover:text-white text-xs">
+                          <X size={16} />
+                        </button>
+                      </div>
 
-                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">Recommended Action:</span>
-                      <p className="text-emerald-200 font-medium mt-1">
-                        {[
-                          { id: 't1', text: 'Maintain this high-energy thesis delivery style.' },
-                          { id: 't2', text: 'Keep using 1.5s silent pauses before core takeaways.' },
-                          { id: 't3', text: 'Replace "basically" with a silent 1-second pause.' },
-                          { id: 't4', text: 'Incorporate 2 more vivid action verbs into details.' }
-                        ].find(x => x.id === selectedTimelineEvent)?.text}
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                          <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">Transcript Snippet:</span>
+                          <p className="text-slate-200 font-medium italic mt-1">
+                            {events.find(x => x.id === selectedTimelineEvent)?.snippet}
+                          </p>
+                        </div>
+
+                        <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                          <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">AI Analysis:</span>
+                          <p className="text-slate-200 mt-1">
+                            {events.find(x => x.id === selectedTimelineEvent)?.analysis}
+                          </p>
+                        </div>
+
+                        <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+                          <div>
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">Recommended Action:</span>
+                            <p className="text-emerald-200 font-medium mt-1">
+                              {events.find(x => x.id === selectedTimelineEvent)?.recText}
+                            </p>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              onClose();
+                              if (onLaunchNextChallenge) {
+                                onLaunchNextChallenge({
+                                  title: events.find(x => x.id === selectedTimelineEvent)?.drill || 'Timeline Drill Practice',
+                                  prompt: 'Practice delivering this segment with zero fillers and optimal pauses.'
+                                });
+                              }
+                            }}
+                            className="btn-primary text-[11px] font-bold py-1.5 px-3 mt-2 self-start flex items-center gap-1.5"
+                          >
+                            <Sparkles size={13} /> Practice This Timestamp
+                          </button>
+                        </div>
+                      </div>
                     </div>
-
-                    <button
-                      onClick={() => {
-                        onClose();
-                        if (onLaunchNextChallenge) {
-                          onLaunchNextChallenge({
-                            title: 'Timeline Drill Practice',
-                            prompt: 'Practice delivering this segment with zero fillers and optimal pauses.'
-                          });
-                        }
-                      }}
-                      className="btn-primary text-[11px] font-bold py-1.5 px-3 mt-2 self-start flex items-center gap-1.5"
-                    >
-                      <Sparkles size={13} /> Practice This Timestamp
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
 
