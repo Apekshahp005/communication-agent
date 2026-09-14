@@ -15,10 +15,10 @@ export default function LiveAnalysisHUD({
   const [selectedVideoMetric, setSelectedVideoMetric] = useState(null); // 'eye_contact' | 'posture'
 
   // Extract Visual / Video Analysis metrics
-  const eyeContact = visualData?.eyeContact || (isCameraActive ? 'Direct & Engaged' : 'Camera OFF (Audio Only)');
-  const postureQuality = visualData?.postureQuality || (isCameraActive ? 'Upright & Confident' : 'Audio Mode');
-  const expressionTone = visualData?.expressionTone || (isCameraActive ? 'Warm & Focused' : 'Active');
-  const observableNotes = visualData?.observableNotes || (isCameraActive ? 'Visual stream active — Good presence' : 'Audio mode active');
+  const eyeContact = visualData?.eyeContact || (isCameraActive ? 'Camera Stream Active' : 'Camera OFF (Audio Only)');
+  const postureQuality = visualData?.postureQuality || (isCameraActive ? 'Upright' : 'Audio Mode');
+  const expressionTone = visualData?.expressionTone || (isCameraActive ? 'Active' : 'Audio Mode');
+  const observableNotes = visualData?.observableNotes || (isCameraActive ? 'WebRTC stream active' : 'Audio mode active');
 
   // Dynamically determine current live strengths
   const liveStrengths = [];

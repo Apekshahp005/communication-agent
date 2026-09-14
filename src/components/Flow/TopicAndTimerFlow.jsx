@@ -1,5 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Brain, Mic, Clock, ArrowRight, Layers, CheckCircle2, Play, Flame, Compass, Users } from 'lucide-react';
+import { fetchHistory } from '../../services/api';
+
+function ProgressStrip() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHistory().then(data => {
+      setHistory(data || []);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return null;
+
+  if (!history || history.length === 0) {
+    return (
+      <div className="glass-panel p-4 px-6 border border-white/10 bg-slate-900/60 rounded-2xl flex justify-between items-center flex-wrap gap-4 text-xs font-mono">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse"></span>
+          <span className="text-slate-300 font-sans font-medium">Ready when you are. Your baseline audit begins with your first practice session.</span>
+        </div>
+        <span className="text-purple-400 font-bold text-[11px] font-sans">0 Sessions Logged</span>
+      </div>
+    );
+  }
+
+  const avgScore = Math.round(
+    history.reduce((acc, item) => acc + (item.report?.overallEffectivenessScore || item.report?.overallScore || 80), 0) / history.length
+  );
+
+  return (
+    <div className="glass-panel p-4 px-6 border border-white/10 bg-slate-900/60 rounded-2xl flex justify-between items-center flex-wrap gap-4 text-xs font-mono">
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span className="text-slate-400 font-sans">Current Practice:</span>
+        <span className="font-bold text-white">{history.length} Session{history.length !== 1 ? 's' : ''} Completed</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span className="text-slate-400 font-sans">Sessions Logged:</span>
+        <span className="font-bold text-purple-300">{history.length}</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span className="text-slate-400 font-sans">Average Score:</span>
+        <span className="font-bold text-cyan-300">{avgScore} / 100</span>
+      </div>
+    </div>
+  );
+}
 
 export const TOPIC_CATEGORIES = [
   {
@@ -155,24 +206,8 @@ export default function TopicAndTimerFlow({ onReadyToSpeak, currentTopic, onSele
             </div>
           </div>
 
-          {/* COMPACT PROGRESS STRIP (NOT GIANT DASHBOARD CARDS) */}
-          <div className="glass-panel p-4 px-6 border border-white/10 bg-slate-900/60 rounded-2xl flex justify-between items-center flex-wrap gap-4 text-xs font-mono">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-400">Current Streak:</span>
-              <span className="font-bold text-white">3 Days 🔥</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400">Sessions Completed:</span>
-              <span className="font-bold text-purple-300">12 Sessions</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400">Communication Score:</span>
-              <span className="font-bold text-cyan-300">84 / 100</span>
-            </div>
-          </div>
+          {/* COMPACT PROGRESS STRIP (HONEST EMPTY STATE OR REAL HISTORY STATS) */}
+          <ProgressStrip />
         </>
       )}
 

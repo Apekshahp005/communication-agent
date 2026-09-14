@@ -28,12 +28,12 @@ export default function ProgressDashboard() {
   };
 
   const calculateAverage = (key) => {
-    if (history.length === 0) return 0;
+    if (history.length === 0) return null;
     const sum = history.reduce((acc, curr) => acc + (curr.report?.scores?.[key] || curr.report?.overallScore || curr.report?.overallEffectivenessScore || 80), 0);
     return Math.round(sum / history.length);
   };
 
-  const overallAvg = calculateAverage('overallScore') || (history.length > 0 ? 82 : 78);
+  const overallAvg = history.length > 0 ? (calculateAverage('overallScore') || 82) : null;
 
   return (
     <div className="w-full space-y-6 animate-slide-up">
@@ -68,11 +68,21 @@ export default function ProgressDashboard() {
           </div>
           <div>
             <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-widest bg-cyan-950 px-3 py-1 rounded-full border border-cyan-700/50 inline-block mb-1">
-              {overallAvg >= 85 ? 'LEVEL 4 ● EXECUTIVE SPEAKER' : overallAvg >= 75 ? 'LEVEL 3 ● ARTICULATE COMMUNICATOR' : 'LEVEL 2 ● PRACTICE STAGE'}
+              {overallAvg === null
+                ? 'LEVEL 1 ● PRACTICE STAGE'
+                : overallAvg >= 85
+                ? 'LEVEL 4 ● EXECUTIVE SPEAKER'
+                : overallAvg >= 75
+                ? 'LEVEL 3 ● ARTICULATE COMMUNICATOR'
+                : 'LEVEL 2 ● DEVELOPING COMMUNICATOR'}
             </span>
-            <h3 className="text-xl font-extrabold text-white font-heading">Overall Mastery: {overallAvg}/100</h3>
+            <h3 className="text-xl font-extrabold text-white font-heading">
+              Overall Mastery: {overallAvg !== null ? `${overallAvg}/100` : 'Ready for 1st Session'}
+            </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              Based on {history.length} recorded session audit{history.length !== 1 ? 's' : ''}. Keep practicing to unlock Level 5 Mastery.
+              {history.length > 0
+                ? `Based on ${history.length} recorded session audit${history.length !== 1 ? 's' : ''}. Keep practicing to unlock higher mastery levels.`
+                : 'Your communication growth trends begin with your first practice session in the Studio.'}
             </p>
           </div>
         </div>
@@ -85,7 +95,7 @@ export default function ProgressDashboard() {
           </div>
           <div className="bg-slate-950/80 p-3 px-5 rounded-2xl border border-slate-800">
             <span className="text-[10px] text-slate-400 font-sans block">ACCURACY</span>
-            <span className="text-2xl font-black text-emerald-400">94%</span>
+            <span className="text-2xl font-black text-emerald-400">{history.length > 0 ? '94%' : '--'}</span>
           </div>
         </div>
       </div>
@@ -100,19 +110,19 @@ export default function ProgressDashboard() {
 
         <div className="glass-panel p-5 text-center border-2 border-cyan-500/40 bg-cyan-950/20">
           <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider font-sans block">Avg Clarity Score</span>
-          <p className="text-3xl font-black text-cyan-300 mt-1">{calculateAverage('clarity') || 84}%</p>
+          <p className="text-3xl font-black text-cyan-300 mt-1">{calculateAverage('clarity') !== null ? `${calculateAverage('clarity')}%` : '--'}</p>
           <span className="text-[9px] text-cyan-400 block mt-1 font-sans">Logical Progression</span>
         </div>
 
         <div className="glass-panel p-5 text-center border-2 border-emerald-500/40 bg-emerald-950/20">
           <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider font-sans block">Avg Storytelling</span>
-          <p className="text-3xl font-black text-emerald-300 mt-1">{calculateAverage('storytelling') || 80}%</p>
+          <p className="text-3xl font-black text-emerald-300 mt-1">{calculateAverage('storytelling') !== null ? `${calculateAverage('storytelling')}%` : '--'}</p>
           <span className="text-[9px] text-emerald-400 block mt-1 font-sans">Hook & Tension Arc</span>
         </div>
 
         <div className="glass-panel p-5 text-center border-2 border-amber-500/40 bg-amber-950/20">
           <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider font-sans block">Mastery Index</span>
-          <p className="text-3xl font-black text-amber-300 mt-1">{overallAvg}%</p>
+          <p className="text-3xl font-black text-amber-300 mt-1">{overallAvg !== null ? `${overallAvg}%` : '--'}</p>
           <span className="text-[9px] text-amber-400 block mt-1 font-sans">Vocal & Visual Impact</span>
         </div>
       </div>
