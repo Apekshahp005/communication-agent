@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, Eye, UserCheck, Activity, Volume2, Gauge, Flame, AlertTriangle, ThumbsUp, Camera } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Eye, UserCheck, Activity, Volume2, Gauge, Flame, AlertTriangle, ThumbsUp, Camera, X, ArrowRight } from 'lucide-react';
 
 export default function LiveAnalysisHUD({
   wordsAnalyzed = [],
@@ -9,8 +9,11 @@ export default function LiveAnalysisHUD({
   wpm = 0,
   pacingFeedback = 'optimal',
   visualData,
-  isCameraActive = true
+  isCameraActive = true,
+  onLaunchPracticeDrill
 }) {
+  const [selectedVideoMetric, setSelectedVideoMetric] = useState(null); // 'eye_contact' | 'posture'
+
   // Extract Visual / Video Analysis metrics
   const eyeContact = visualData?.eyeContact || (isCameraActive ? 'Direct & Engaged' : 'Camera OFF (Audio Only)');
   const postureQuality = visualData?.postureQuality || (isCameraActive ? 'Upright & Confident' : 'Audio Mode');
@@ -58,49 +61,62 @@ export default function LiveAnalysisHUD({
   }
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up font-sans">
-      {/* COLUMN 1: LIVE VIDEO & VISUAL ANALYSIS */}
-      <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-cyan-500/50 bg-slate-900/90 shadow-xl shadow-cyan-950/20">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
-              <Camera size={16} />
+    <div className="w-full space-y-3 font-sans">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up">
+        {/* COLUMN 1: LIVE VIDEO & VISUAL ANALYSIS */}
+        <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-cyan-500/50 bg-slate-900/90 shadow-xl shadow-cyan-950/20">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
+                <Camera size={16} />
+              </div>
+              <h4 className="text-sm font-extrabold text-white font-heading">Video Analysis</h4>
             </div>
-            <h4 className="text-sm font-extrabold text-white font-heading">Video Analysis</h4>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-700/50 uppercase">
+              {isCameraActive ? 'LIVE VISION' : 'AUDIO ONLY'}
+            </span>
           </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-700/50 uppercase">
-            {isCameraActive ? 'LIVE VISION' : 'AUDIO ONLY'}
-          </span>
+
+          <div className="space-y-2 text-xs">
+            <div
+              onClick={() => setSelectedVideoMetric(selectedVideoMetric === 'eye_contact' ? null : 'eye_contact')}
+              className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono cursor-pointer hover:border-cyan-500/50 transition-all"
+              title="Click for Eye Contact Diagnostic & Practice Drill"
+            >
+              <span className="text-slate-400 font-sans flex items-center gap-1.5">
+                <Eye size={13} className="text-cyan-400" /> Eye Contact:
+              </span>
+              <span className="font-bold text-cyan-300 flex items-center gap-1">
+                {eyeContact} <span className="text-[9px] text-slate-500 font-sans font-normal">→</span>
+              </span>
+            </div>
+
+            <div
+              onClick={() => setSelectedVideoMetric(selectedVideoMetric === 'posture' ? null : 'posture')}
+              className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono cursor-pointer hover:border-purple-500/50 transition-all"
+              title="Click for Posture Diagnostic & Practice Drill"
+            >
+              <span className="text-slate-400 font-sans flex items-center gap-1.5">
+                <UserCheck size={13} className="text-purple-400" /> Posture Quality:
+              </span>
+              <span className="font-bold text-purple-300 flex items-center gap-1">
+                {postureQuality} <span className="text-[9px] text-slate-500 font-sans font-normal">→</span>
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
+              <span className="text-slate-400 font-sans flex items-center gap-1.5">
+                <Activity size={13} className="text-emerald-400" /> Facial Expression:
+              </span>
+              <span className="font-bold text-emerald-300">{expressionTone}</span>
+            </div>
+
+            <p className="text-[11px] text-slate-400 italic pt-1 border-t border-slate-800/80">
+              Note: {observableNotes}
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-2 text-xs">
-          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
-            <span className="text-slate-400 font-sans flex items-center gap-1.5">
-              <Eye size={13} className="text-cyan-400" /> Eye Contact:
-            </span>
-            <span className="font-bold text-cyan-300">{eyeContact}</span>
-          </div>
-
-          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
-            <span className="text-slate-400 font-sans flex items-center gap-1.5">
-              <UserCheck size={13} className="text-purple-400" /> Posture Quality:
-            </span>
-            <span className="font-bold text-purple-300">{postureQuality}</span>
-          </div>
-
-          <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono">
-            <span className="text-slate-400 font-sans flex items-center gap-1.5">
-              <Activity size={13} className="text-emerald-400" /> Facial Expression:
-            </span>
-            <span className="font-bold text-emerald-300">{expressionTone}</span>
-          </div>
-
-          <p className="text-[11px] text-slate-400 italic pt-1 border-t border-slate-800/80">
-            Note: {observableNotes}
-          </p>
-        </div>
-      </div>
 
       {/* COLUMN 2: LIVE AUDIO & VOCAL ANALYSIS */}
       <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-purple-500/50 bg-slate-900/90 shadow-xl shadow-purple-950/20">
@@ -180,6 +196,66 @@ export default function LiveAnalysisHUD({
           </div>
         </div>
       </div>
+    </div>
+
+      {/* Selected Video Diagnostic Drawer */}
+      {selectedVideoMetric && (
+        <div className="glass-panel p-5 border-2 border-cyan-500/60 bg-slate-900/95 space-y-3 animate-slide-up">
+          <div className="flex justify-between items-center">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
+              <Camera size={16} className="text-cyan-400" />
+              {selectedVideoMetric === 'eye_contact' ? 'Eye Contact Diagnostic' : 'Posture Quality Diagnostic'}
+            </h4>
+            <button onClick={() => setSelectedVideoMetric(null)} className="text-slate-400 hover:text-white text-xs">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">What We Observed:</span>
+              <p className="text-slate-200 mt-1">
+                {selectedVideoMetric === 'eye_contact'
+                  ? 'Maintained direct lens alignment during core thesis declarations.'
+                  : 'Shoulders remained square with good chest orientation.'}
+              </p>
+            </div>
+
+            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+              <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">Why It Matters:</span>
+              <p className="text-slate-200 mt-1">
+                {selectedVideoMetric === 'eye_contact'
+                  ? 'Direct camera gaze projects immediate authority and personal connection.'
+                  : 'Upright posture improves vocal resonance and communicates executive presence.'}
+              </p>
+            </div>
+
+            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">Coach Recommendation:</span>
+                <p className="text-emerald-200 font-medium mt-1">
+                  {selectedVideoMetric === 'eye_contact'
+                    ? 'Look directly into the camera lens when declaring your key takeaways.'
+                    : 'Keep your spine straight and avoid leaning forward toward the screen.'}
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (onLaunchPracticeDrill) {
+                    onLaunchPracticeDrill(selectedVideoMetric === 'eye_contact' ? 'Eye Contact Drill' : 'Posture Drill');
+                  }
+                  setSelectedVideoMetric(null);
+                }}
+                className="btn-primary text-[11px] font-bold py-1.5 px-3 mt-2 self-start flex items-center gap-1.5"
+              >
+                <Sparkles size={13} />
+                <span>{selectedVideoMetric === 'eye_contact' ? 'Practice Eye Contact' : 'Practice Posture'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

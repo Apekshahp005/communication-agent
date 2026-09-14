@@ -400,6 +400,11 @@ export default function StudioView({
           wpm={wpm}
           visualData={visualData}
           isCameraActive={isCameraActive}
+          onLaunchPracticeDrill={(metricName) => {
+            setRetrySnippet(fullTranscript.slice(-150) || "Improve video & visual presence");
+            setRetryPrompt(`Targeted practice drill for: ${metricName}`);
+            setIsRetryOpen(true);
+          }}
         />
       )}
 
