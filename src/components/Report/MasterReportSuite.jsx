@@ -5,6 +5,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunchNextChallenge, onLaunchNextSession, onWordClick }) {
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'multimodal' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis' | 'timeline'
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
 
@@ -80,8 +81,8 @@ OVERALL SCORE: ${targetScore}/100
 RATING: ${report.overallRating || 'Good'}
 
 MULTIMODAL DUAL AUDIT:
-- Video (Visual) Analysis: Eye Contact 92%, Posture Upright, Expressions Warm & Focused
-- Audio (Vocal) Analysis: Speech Cadence 142 WPM, Low Filler Rate, High Power Word Usage
+- Video (Visual) Analysis: Eye Contact Direct & Engaged, Posture Upright & Confident, Facial Expression Warm
+- Audio (Vocal) Analysis: Speech Cadence ${report.pacingWpm || 142} WPM, Low Filler Rate, High Power Word Usage
 
 CATEGORY SCORES:
 - Clarity & Structure: ${scores.clarityScore || scores.clarity || 84}%
@@ -97,10 +98,6 @@ ${report.biggestOpportunity || report.biggestProblem || ''}
 BEST SPOKEN LINE:
 "${report.bestSpokenLine?.snippet || ''}"
 Why: ${report.bestSpokenLine?.whyItWorked || ''}
-
-STORY MEMORY TEST (WHAT AUDIENCE REMEMBERS):
-- Main Message: ${report.storyMemory?.audienceRemembers || ''}
-- Most Memorable Idea: ${report.storyMemory?.mostMemorableIdea || ''}
 
 TARGETED NEXT SESSION PRACTICE DRILL:
 ${report.nextPracticeDrill?.title || ''}
@@ -167,7 +164,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
       title: 'Communication Skills & Persuasion',
       score: scores.engagementScore || 85,
       summary: 'Ability to influence listeners and hold audience attention.',
-      details: report.communicationSkills || 'Persuasive energy was strong. Listener engagement remained consistently above 80% throughout the delivery.'
+      details: report.communicationSkills || 'Persuasive energy was strong. Listener engagement remained consistently high throughout the delivery.'
     },
     {
       id: 'vocab',
@@ -203,12 +200,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             </div>
             <div>
               <span className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                COMMUNICATION AGENT MASTER AUDIT
-                {!comparison.isFirstSession && (
-                  <span className="text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-700/60 text-[10px]">
-                    Progress Compared
-                  </span>
-                )}
+                AI COMMUNICATION COACH AUDIT
               </span>
               <h2 className="text-2xl font-extrabold text-white font-heading">
                 {reportData.sessionMode ? `Session: "${reportData.sessionMode}"` : 'Communication Report'}
@@ -225,36 +217,131 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-slate-800/80 pb-2 flex-wrap text-xs">
-          {[
-            { id: 'executive', label: 'Executive Scorecard' },
-            { id: 'multimodal', label: 'Dual Audio & Video Audit' },
-            { id: 'timeline', label: 'Interactive Session Timeline' },
-            { id: 'ai_suggestions', label: 'AI Suggestions for Next Time' },
-            { id: 'detailed_analysis', label: 'Detailed Category Breakdown' },
-            { id: 'story_memory', label: 'Story Memory Test' },
-            { id: 'pacing', label: 'Pacing & Fillers' },
-            { id: 'words', label: 'Word Frequency' },
-            { id: 'moments', label: 'Best Line & Moments' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveReportTab(tab.id)}
-              className={`px-4 py-2 rounded-xl font-bold font-heading transition-all ${
-                activeReportTab === tab.id
-                  ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-md shadow-purple-500/20 scale-[1.02]'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* TAB 1: EXECUTIVE SCORECARD */}
-        {activeReportTab === 'executive' && (
+        {/* SHORT CONCISE OVERVIEW FIRST (SECTION 17 REQUIREMENT) */}
+        {!showFullAnalysis ? (
           <div className="space-y-6 animate-slide-up">
+            <div className="glass-panel p-8 border-2 border-purple-500/60 bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/40 rounded-3xl space-y-6 text-center shadow-2xl">
+              <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-widest bg-purple-950/90 px-4 py-1.5 rounded-full border border-purple-500/50 inline-block shadow-md">
+                SESSION COMPLETE
+              </span>
+              <div className="flex justify-center items-baseline gap-2">
+                <span className="text-6xl font-black text-white font-mono">{displayScore}</span>
+                <span className="text-2xl font-bold text-slate-500 font-mono">/ 100</span>
+              </div>
+              <p className="text-lg font-extrabold text-purple-200 font-heading">You communicated clearly.</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-2">
+                {/* YOU DID WELL */}
+                <div className="glass-panel p-5 border border-emerald-500/50 bg-emerald-950/20 space-y-2">
+                  <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 size={16} /> YOU DID WELL
+                  </span>
+                  <ul className="space-y-2 text-xs text-slate-200">
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span><strong>Clear opening:</strong> Hooked audience immediately within first 15 seconds.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span><strong>Strong vocabulary:</strong> Integrated power words without hesitation.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span><strong>Good structure:</strong> Kept logical progression across core points.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* YOUR BIGGEST OPPORTUNITY */}
+                <div className="glass-panel p-5 border border-cyan-500/50 bg-cyan-950/20 space-y-2 flex flex-col justify-between">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Compass size={16} /> YOUR BIGGEST OPPORTUNITY
+                    </span>
+                    <p className="text-sm font-extrabold text-white mt-1">
+                      {report.biggestOpportunity || report.biggestProblem || "Slow down during complex explanations."}
+                    </p>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-2">
+                    {report.nextPracticeDrill?.instruction || "Pause for 1.5 seconds right after declaring your core takeaway."}
+                  </p>
+                </div>
+              </div>
+
+              {/* YOUR NEXT PRACTICE CTA */}
+              <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/30 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-2xl">
+                <div className="text-left space-y-1">
+                  <span className="text-xs font-mono font-bold text-purple-300 uppercase">YOUR NEXT PRACTICE</span>
+                  <p className="text-base font-extrabold text-white font-heading">
+                    {report.nextPracticeDrill?.title || "60-Second Slow-Speaking & Strategic Pause Drill"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onLaunchNextChallenge) {
+                      onLaunchNextChallenge({
+                        title: report.nextPracticeDrill?.title || "60-Second Slow-Speaking Drill",
+                        prompt: report.nextPracticeDrill?.instruction || "Deliver your main point, pause for 1.5s, then state your evidence."
+                      });
+                    }
+                  }}
+                  className="btn-primary text-sm font-extrabold px-6 py-3 shadow-xl shadow-purple-500/30 flex items-center gap-2 scale-105 hover:scale-110 transition-transform"
+                >
+                  <Sparkles size={16} /> START PRACTICE <ArrowRight size={16} />
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowFullAnalysis(true)}
+                  className="text-xs font-mono font-bold text-purple-400 hover:text-purple-300 flex items-center justify-center gap-1 mx-auto"
+                >
+                  <BarChart3 size={14} /> VIEW FULL DETAILED ANALYSIS ↓
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6 animate-slide-up">
+            {/* Tab Navigation */}
+            <div className="flex justify-between items-center border-b border-slate-800/80 pb-2 flex-wrap gap-2 text-xs">
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { id: 'executive', label: 'Executive Scorecard' },
+                  { id: 'multimodal', label: 'Dual Audio & Video Audit' },
+                  { id: 'timeline', label: 'Interactive Session Timeline' },
+                  { id: 'ai_suggestions', label: 'AI Suggestions for Next Time' },
+                  { id: 'detailed_analysis', label: 'Detailed Category Breakdown' },
+                  { id: 'story_memory', label: 'Story Memory Test' },
+                  { id: 'pacing', label: 'Pacing & Fillers' },
+                  { id: 'words', label: 'Word Frequency' },
+                  { id: 'moments', label: 'Best Line & Moments' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveReportTab(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl font-bold font-heading transition-all ${
+                      activeReportTab === tab.id
+                        ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-md shadow-purple-500/20 scale-[1.02]'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowFullAnalysis(false)}
+                className="text-[11px] font-mono font-bold text-slate-400 hover:text-white"
+              >
+                ↑ Collapse Summary
+              </button>
+            </div>
+
+            {/* TAB 1: EXECUTIVE SCORECARD */}
+            {activeReportTab === 'executive' && (
+              <div className="space-y-6">
             {/* Animated Hero Scorecard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gradient-to-r from-purple-950/70 via-slate-900 to-cyan-950/70 border border-purple-500/40 p-6 rounded-2xl shadow-xl">
               <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-800 pb-4 md:pb-0 md:pr-6">
@@ -1051,6 +1138,8 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             )}
           </div>
         )}
+      </div>
+    )}
 
         {/* BOTTOM ACTION BAR WITH PRIMARY INTERACTIVE CTA */}
         <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">

@@ -63,7 +63,7 @@ export default function LiveAnalysisHUD({
   return (
     <div className="w-full space-y-3 font-sans">
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up">
-        {/* COLUMN 1: LIVE VIDEO & VISUAL ANALYSIS */}
+        {/* COLUMN 1: VISUAL COACH (WHAT I SAW) */}
         <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-cyan-500/50 bg-slate-900/90 shadow-xl shadow-cyan-950/20">
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex items-center justify-between">
@@ -71,7 +71,10 @@ export default function LiveAnalysisHUD({
               <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
                 <Camera size={16} />
               </div>
-              <h4 className="text-sm font-extrabold text-white font-heading">Video Analysis</h4>
+              <div>
+                <h4 className="text-sm font-extrabold text-white font-heading">VISUAL COACH</h4>
+                <p className="text-[10px] font-mono text-cyan-300 font-bold">What I saw</p>
+              </div>
             </div>
             <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-700/50 uppercase">
               {isCameraActive ? 'LIVE VISION' : 'AUDIO ONLY'}
@@ -118,7 +121,7 @@ export default function LiveAnalysisHUD({
           </div>
         </div>
 
-      {/* COLUMN 2: LIVE AUDIO & VOCAL ANALYSIS */}
+      {/* COLUMN 2: AUDIO COACH (WHAT I HEARD) */}
       <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-purple-500/50 bg-slate-900/90 shadow-xl shadow-purple-950/20">
         <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
         <div className="flex items-center justify-between">
@@ -126,7 +129,10 @@ export default function LiveAnalysisHUD({
             <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
               <Volume2 size={16} />
             </div>
-            <h4 className="text-sm font-extrabold text-white font-heading">Audio Analysis</h4>
+            <div>
+              <h4 className="text-sm font-extrabold text-white font-heading">AUDIO COACH</h4>
+              <p className="text-[10px] font-mono text-purple-300 font-bold">What I heard</p>
+            </div>
           </div>
           <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950/80 text-purple-300 border border-purple-700/50 uppercase">
             LIVE VOCAL
@@ -155,7 +161,7 @@ export default function LiveAnalysisHUD({
         </div>
       </div>
 
-      {/* COLUMN 3: COMBINED DUAL COACHING FEEDBACK */}
+      {/* COLUMN 3: COMMUNICATION COACH (COMBINED RECOMMENDATION) */}
       <div className="glass-panel p-5 space-y-3 relative overflow-hidden border-2 border-emerald-500/50 bg-slate-900/90 shadow-xl shadow-emerald-950/20">
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
         <div className="flex items-center justify-between">
@@ -163,7 +169,10 @@ export default function LiveAnalysisHUD({
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300">
               <Sparkles size={16} />
             </div>
-            <h4 className="text-sm font-extrabold text-white font-heading">Dual AI Insights</h4>
+            <div>
+              <h4 className="text-sm font-extrabold text-white font-heading">COMMUNICATION COACH</h4>
+              <p className="text-[10px] font-mono text-emerald-300 font-bold">Combined Recommendation</p>
+            </div>
           </div>
           <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-700/50 uppercase">
             LIVE INSIGHTS

@@ -81,7 +81,10 @@ export default function StudioView({
 
   // Start Camera handler
   const initCamera = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current) {
+      setTimeout(initCamera, 100);
+      return;
+    }
     setCameraStatus('loading');
     const result = await cameraManagerRef.current.startCamera(videoRef.current);
     if (result.success) {
@@ -355,36 +358,44 @@ export default function StudioView({
         </div>
       )}
 
-      {/* PRE-SESSION HERO CHALLENGE CARD (INTENTIONAL PRE-SESSION EXPERIENCE) */}
+      {/* PRE-SESSION HERO CHALLENGE CARD (EXACT 5-SECOND RULE CLEAR INTENT) */}
       {!isSessionActive && !isPreparingStudio && (
-        <div className="glass-panel p-6 border-2 border-purple-500/50 bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/40 space-y-4 rounded-3xl shadow-2xl">
+        <div className="glass-panel p-8 border-2 border-purple-500/60 bg-gradient-to-r from-purple-950/50 via-slate-900 to-cyan-950/50 space-y-6 rounded-3xl shadow-2xl animate-slide-up">
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2 bg-purple-950/80 px-3.5 py-1 rounded-full border border-purple-500/40">
-              <Brain size={14} className="text-purple-400" /> TODAY'S PRACTICE CHALLENGE
+            <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2 bg-purple-950/90 px-4 py-1.5 rounded-full border border-purple-500/50 shadow-md">
+              <Brain size={16} className="text-purple-400" /> TODAY'S CHALLENGE
             </span>
-            <span className="text-xs font-mono text-cyan-300 font-bold bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800">
+            <span className="text-xs font-mono text-cyan-300 font-bold bg-slate-950/90 px-3.5 py-1 rounded-full border border-slate-800">
               Mode: {currentMode.title}
             </span>
           </div>
 
-          <div>
-            <h2 className="text-2xl font-extrabold text-white font-heading leading-tight">
-              "{currentTopic || currentMode.title}"
+          <div className="space-y-3">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white font-heading leading-tight tracking-tight">
+              "{currentTopic || "Explain AGI to a beginner."}"
             </h2>
-            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-              Target Persona: <strong className="text-cyan-300 capitalize">{audienceType}</strong> — Focus on clear declarations, silent pauses, and direct eye contact.
-            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs font-mono text-slate-300">
+              <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80">
+                <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Audience</span>
+                <span className="text-cyan-300 font-bold capitalize text-sm">{audienceType || 'Curious listener'}</span>
+              </div>
+              <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80">
+                <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Mode</span>
+                <span className="text-purple-300 font-bold text-sm">{currentMode.title}</span>
+              </div>
+              <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80">
+                <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Duration</span>
+                <span className="text-emerald-400 font-bold text-sm">2 minutes</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
-            <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
-              <span>Target Duration: <strong>02:00</strong></span>
-              <span>•</span>
-              <span className="text-emerald-400">AI Coach Ready</span>
-            </div>
-
-            <button onClick={handleStartPracticeSession} className="btn-primary text-sm font-bold shadow-lg shadow-purple-500/30 flex items-center gap-2">
-              <Play size={18} /> START LIVE PRACTICE SESSION
+          <div className="pt-2 flex justify-start">
+            <button
+              onClick={handleStartPracticeSession}
+              className="btn-primary text-base font-extrabold px-8 py-4 rounded-2xl shadow-xl shadow-purple-500/30 flex items-center gap-3 scale-105 hover:scale-110 transition-transform"
+            >
+              <Play size={22} /> START PRACTICE
             </button>
           </div>
         </div>
@@ -396,9 +407,26 @@ export default function StudioView({
           <div className="flex items-center gap-2 text-xs text-purple-400 font-mono font-semibold uppercase tracking-wider">
             <Sparkles size={14} /> LIVE AI COACHING STUDIO
             <span className="text-slate-600">•</span>
-            <span className={isCameraActive && cameraStatus === 'granted' ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold flex items-center gap-1'}>
-              {isCameraActive && cameraStatus === 'granted' ? <Video size={13} /> : <CameraOff size={13} />}
-              Camera {isCameraActive && cameraStatus === 'granted' ? 'Active' : 'Disabled / Audio-Only'}
+            <span className={
+              cameraStatus === 'loading'
+                ? 'text-purple-300 font-bold flex items-center gap-1'
+                : isCameraActive && cameraStatus === 'granted'
+                ? 'text-emerald-400 font-bold'
+                : 'text-amber-400 font-bold flex items-center gap-1'
+            }>
+              {cameraStatus === 'loading' ? (
+                <>
+                  <RefreshCw size={13} className="animate-spin text-purple-400" /> Initializing Camera...
+                </>
+              ) : isCameraActive && cameraStatus === 'granted' ? (
+                <>
+                  <Video size={13} /> Camera Active
+                </>
+              ) : (
+                <>
+                  <CameraOff size={13} /> Camera {cameraStatus === 'denied' ? 'Blocked' : 'Disabled (Audio Mode)'}
+                </>
+              )}
             </span>
           </div>
           <h3 className="text-lg font-bold text-white mt-1 font-heading flex items-center gap-2">
@@ -415,7 +443,7 @@ export default function StudioView({
                 ? 'bg-purple-950/80 text-purple-300 border-purple-500/50 hover:bg-purple-900/80'
                 : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
             }`}
-            title="Toggle AI Voice Coach (Text-to-Speech Output)"
+            title="Toggle AI Voice Coach Output"
           >
             {!isVoiceCoachMuted ? <Volume2 size={15} className="text-purple-400 animate-pulse" /> : <VolumeX size={15} />}
             <span>AI Voice {isVoiceCoachMuted ? 'OFF' : 'ON'}</span>
@@ -436,25 +464,29 @@ export default function StudioView({
         </div>
       </div>
 
-      {/* SINGLE DYNAMIC LIVE AI COACHING INSIGHT CARD (SECTION 8 REQUIREMENT) */}
+      {/* SINGLE FLOATING GLASS AI COACH INSIGHT PANEL (SECTION 8 REQUIREMENT) */}
       {isSessionActive && (
-        <div className="glass-panel p-4 border-2 border-cyan-500/60 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-purple-950/40 space-y-1.5 animate-slide-up">
+        <div className="glass-panel p-5 border-2 border-purple-500/60 bg-gradient-to-r from-purple-950/50 via-slate-900 to-cyan-950/50 space-y-2 animate-slide-up rounded-2xl shadow-xl">
           <div className="flex justify-between items-center text-xs font-mono">
-            <span className="text-cyan-300 font-bold uppercase flex items-center gap-1.5">
-              <Sparkles size={14} className="text-cyan-400 animate-spin-slow" /> LIVE AI COACH INSIGHT
+            <span className="text-purple-300 font-bold uppercase flex items-center gap-2">
+              <Sparkles size={16} className="text-purple-400 animate-pulse" /> ✦ AI COACH
             </span>
-            <span className="text-[10px] text-slate-400">Updates from real speech & vision data</span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+              volume > 15 ? 'bg-emerald-950 text-emerald-300 border-emerald-700' : 'bg-slate-950 text-slate-400 border-slate-800'
+            }`}>
+              {volume > 15 ? '● YOU\'RE SPEAKING' : 'LISTENING FOR YOUR VOICE'}
+            </span>
           </div>
-          <p className="text-sm font-extrabold text-white leading-relaxed font-heading">
+          <p className="text-base font-extrabold text-white leading-relaxed font-heading pt-1">
             {wpm > 165
               ? `You're speaking slightly faster than your target (${wpm} WPM). Try adding a 1.5-second silent pause.`
               : wpm >= 120 && wpm <= 165
               ? `Vocal cadence is optimal (${wpm} WPM) with strong sentence structure.`
               : fillers.length > 0
-              ? `Filler detected ("${fillers[fillers.length - 1]}"). Replace hesitation words with silent pauses.`
+              ? `Filler word detected ("${fillers[fillers.length - 1]}"). Replace hesitation words with silent pauses.`
               : volume > 15
-              ? `Strong vocal conviction — maintain direct camera lens gaze.`
-              : `Silence detected — deliver your next takeaway with firm authority.`}
+              ? `Strong opening. You stated your main idea clearly. Keep going.`
+              : `Listening... state your next key takeaway with firm vocal authority.`}
           </p>
         </div>
       )}

@@ -16,7 +16,7 @@ export default function CameraFeed({
 
   return (
     <div
-      className={`relative w-full h-[380px] md:h-[440px] rounded-3xl overflow-hidden glass-panel border transition-all duration-300 flex flex-col justify-center items-center ${
+      className={`relative w-full h-[440px] md:h-[540px] rounded-3xl overflow-hidden glass-panel border transition-all duration-300 flex flex-col justify-center items-center ${
         isSpeaking
           ? 'border-purple-500/80 shadow-[0_0_50px_rgba(139,92,246,0.45)] ring-2 ring-purple-500/50'
           : 'border-slate-800/80 shadow-2xl bg-slate-950'
