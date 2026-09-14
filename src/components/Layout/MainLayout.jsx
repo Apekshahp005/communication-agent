@@ -7,11 +7,10 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'studio', label: 'Live Studio', icon: Video },
-    { id: 'topic', label: 'Topic & Timer', icon: Brain },
-    { id: 'modes', label: '8 Practice Modes', icon: Grid },
+    { id: 'studio', label: 'Practice Studio', icon: Video },
+    { id: 'modes', label: 'Practice Modes', icon: Grid },
     { id: 'challenges', label: 'Practice Drills', icon: Target },
-    { id: 'progress', label: 'Analytics History', icon: TrendingUp }
+    { id: 'progress', label: 'Progress & Analytics', icon: TrendingUp }
   ];
 
   return (
@@ -34,7 +33,7 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
         {/* Navigation items */}
         <nav className="flex-1 space-y-2">
           <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider px-3 block mb-2">
-            PRACTICE WORKSPACE
+            AI STUDIO WORKSPACE
           </span>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -45,7 +44,7 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
                 onClick={() => onTabChange(item.id)}
                 className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold font-heading transition-all ${
                   isActive
-                    ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-md shadow-purple-500/20'
+                    ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-md shadow-purple-500/20 scale-[1.02]'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                 }`}
               >
@@ -56,9 +55,12 @@ export default function MainLayout({ activeTab, onTabChange, children }) {
           })}
         </nav>
 
-        <div className="pt-4 border-t border-slate-800/80 text-[11px] text-slate-500 space-y-1">
-          <p className="font-semibold text-slate-400">Gemini 2.5 Flash Engine</p>
-          <p className="text-[10px]">Real-Time Multimodal Voice & Vision</p>
+        <div className="pt-4 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-1 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-white">AI COACH ● Online</span>
+          </div>
+          <p className="text-[10px] text-slate-500">Voice + Vision Multimodal Active</p>
         </div>
       </aside>
 

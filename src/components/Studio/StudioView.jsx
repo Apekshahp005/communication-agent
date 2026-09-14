@@ -132,6 +132,11 @@ export default function StudioView({
     return () => clearInterval(frameInterval);
   }, [isSessionActive, isSessionPaused, isCameraActive, cameraStatus, fullTranscript]);
 
+  // Studio transition and compact metrics toggle state
+  const [isPreparingStudio, setIsPreparingStudio] = useState(false);
+  const [prepStep, setPrepStep] = useState(0); // 0 -> 1 -> 2 -> 3
+  const [showDetailedMetrics, setShowDetailedMetrics] = useState(false);
+
   const speakWithMicDucking = (text) => {
     if (isVoiceCoachMuted) return;
     ttsService.speak(text, {
@@ -149,104 +154,113 @@ export default function StudioView({
   };
 
   const handleStartPracticeSession = async () => {
-    setIsSessionActive(true);
-    setIsSessionPaused(false);
-    setSessionTime(0);
-    setFullTranscript('');
-    setInterimTranscript('');
-    setWordsAnalyzed([]);
-    setFillers([]);
-    setPowerWords([]);
-    setJargon([]);
-    setVague([]);
-    setLevel1Alert(null);
-    setLevel2Toasts([]);
-    setAiSpeechResponse(null);
-    setRetriesPerformed([]);
+    setIsPreparingStudio(true);
+    setPrepStep(1);
 
-    audioAnalyzerRef.current.onVolumeUpdate = (vol) => {
-      if (!isSessionPaused) setVolume(vol);
-    };
-    audioAnalyzerRef.current.onPauseDetected = (pause) => {
-      if (!isSessionPaused) setPauseInfo(pause);
-    };
-    await audioAnalyzerRef.current.start();
+    setTimeout(() => setPrepStep(2), 400);
+    setTimeout(() => setPrepStep(3), 800);
 
-    const speechService = speechServiceRef.current;
-    speechService.reset();
+    setTimeout(async () => {
+      setIsPreparingStudio(false);
+      setIsSessionActive(true);
+      setIsSessionPaused(false);
+      setSessionTime(0);
+      setFullTranscript('');
+      setInterimTranscript('');
+      setWordsAnalyzed([]);
+      setFillers([]);
+      setPowerWords([]);
+      setJargon([]);
+      setVague([]);
+      setLevel1Alert(null);
+      setLevel2Toasts([]);
+      setAiSpeechResponse(null);
+      setRetriesPerformed([]);
 
-    speechService.onTranscriptUpdate = ({
-      full, interim, wordsAnalyzed: wList, fillers: fList, powerWords: pList, jargon: jList, vague: vList, wpm: currentWpm, totalWords: tw
-    }) => {
-      if (!isSessionPaused) {
-        setFullTranscript(full);
-        setInterimTranscript(interim);
-        setWordsAnalyzed(wList);
-        setFillers(fList);
-        setPowerWords(pList);
-        setJargon(jList);
-        setVague(vList);
-        setWpm(currentWpm);
-        setTotalWords(tw);
-      }
-    };
+      audioAnalyzerRef.current.onVolumeUpdate = (vol) => {
+        if (!isSessionPaused) setVolume(vol);
+      };
+      audioAnalyzerRef.current.onPauseDetected = (pause) => {
+        if (!isSessionPaused) setPauseInfo(pause);
+      };
+      await audioAnalyzerRef.current.start();
 
-    speechService.onChunkComplete = async (finalChunk) => {
-      if (!finalChunk || finalChunk === lastChunkProcessedRef.current || isSessionPaused) return;
-      lastChunkProcessedRef.current = finalChunk;
+      const speechService = speechServiceRef.current;
+      speechService.reset();
 
-      const analysis = await analyzeSpeechChunk({
-        transcript: finalChunk,
-        recentContext: fullTranscript.slice(-300),
-        mode: currentTopic || currentMode.title,
-        audienceType,
-        activeStoryMemory: []
-      });
-
-      if (analysis.level1Alert) {
-        setLevel1Alert(analysis.level1Alert);
-        speakWithMicDucking(analysis.level1Alert);
-        setTimeout(() => setLevel1Alert(null), 7000);
-      }
-
-      if (analysis.level2Toasts && analysis.level2Toasts.length > 0) {
-        setLevel2Toasts(analysis.level2Toasts);
-        setTimeout(() => setLevel2Toasts([]), 5000);
-      }
-
-      if (analysis.storyCallbackOpportunity) {
-        setStoryOpportunity(analysis.storyCallbackOpportunity);
-      }
-      if (analysis.witOpportunity) {
-        setWitOpportunity(analysis.witOpportunity);
-      }
-
-      if (analysis.retryTriggered && !isRetryOpen) {
-        const pText = analysis.retryPrompt || "That part is key, but difficult to follow. Try it again in 1 simple sentence.";
-        setRetrySnippet(analysis.weakSnippet || finalChunk);
-        setRetryPrompt(pText);
-        setIsRetryOpen(true);
-        speakWithMicDucking(pText);
-      }
-
-      if (['interview', 'podcast', 'sales', 'audience_qa'].includes(currentMode.id)) {
-        const adaptive = await generateAdaptiveResponse({
-          mode: currentMode.title,
-          audienceType,
-          fullTranscript: fullTranscript.slice(-400),
-          lastUserResponse: finalChunk
-        });
-        if (adaptive?.aiSpeechResponse) {
-          setAiSpeechResponse(adaptive.aiSpeechResponse);
-          setAiCoachingSubtext(adaptive.coachingSubtext);
-          speakWithMicDucking(adaptive.aiSpeechResponse);
+      speechService.onTranscriptUpdate = ({
+        full, interim, wordsAnalyzed: wList, fillers: fList, powerWords: pList, jargon: jList, vague: vList, wpm: currentWpm, totalWords: tw
+      }) => {
+        if (!isSessionPaused) {
+          setFullTranscript(full);
+          setInterimTranscript(interim);
+          setWordsAnalyzed(wList);
+          setFillers(fList);
+          setPowerWords(pList);
+          setJargon(jList);
+          setVague(vList);
+          setWpm(currentWpm);
+          setTotalWords(tw);
         }
-      }
-    };
+      };
 
-    if (isMicActive) {
-      speechService.start();
-    }
+      speechService.onChunkComplete = async (finalChunk) => {
+        if (!finalChunk || finalChunk === lastChunkProcessedRef.current || isSessionPaused) return;
+        lastChunkProcessedRef.current = finalChunk;
+
+        const analysis = await analyzeSpeechChunk({
+          transcript: finalChunk,
+          recentContext: fullTranscript.slice(-300),
+          mode: currentTopic || currentMode.title,
+          audienceType,
+          activeStoryMemory: []
+        });
+
+        if (analysis.level1Alert) {
+          setLevel1Alert(analysis.level1Alert);
+          speakWithMicDucking(analysis.level1Alert);
+          setTimeout(() => setLevel1Alert(null), 7000);
+        }
+
+        if (analysis.level2Toasts && analysis.level2Toasts.length > 0) {
+          setLevel2Toasts(analysis.level2Toasts);
+          setTimeout(() => setLevel2Toasts([]), 5000);
+        }
+
+        if (analysis.storyCallbackOpportunity) {
+          setStoryOpportunity(analysis.storyCallbackOpportunity);
+        }
+        if (analysis.witOpportunity) {
+          setWitOpportunity(analysis.witOpportunity);
+        }
+
+        if (analysis.retryTriggered && !isRetryOpen) {
+          const pText = analysis.retryPrompt || "That part is key, but difficult to follow. Try it again in 1 simple sentence.";
+          setRetrySnippet(analysis.weakSnippet || finalChunk);
+          setRetryPrompt(pText);
+          setIsRetryOpen(true);
+          speakWithMicDucking(pText);
+        }
+
+        if (['interview', 'podcast', 'sales', 'audience_qa'].includes(currentMode.id)) {
+          const adaptive = await generateAdaptiveResponse({
+            mode: currentMode.title,
+            audienceType,
+            fullTranscript: fullTranscript.slice(-400),
+            lastUserResponse: finalChunk
+          });
+          if (adaptive?.aiSpeechResponse) {
+            setAiSpeechResponse(adaptive.aiSpeechResponse);
+            setAiCoachingSubtext(adaptive.coachingSubtext);
+            speakWithMicDucking(adaptive.aiSpeechResponse);
+          }
+        }
+      };
+
+      if (isMicActive) {
+        speechService.start();
+      }
+    }, 1200);
   };
 
   const handleEndSession = () => {
@@ -319,24 +333,77 @@ export default function StudioView({
 
   return (
     <div className="w-full space-y-6">
+      {/* PRE-SESSION STUDIO SETUP TRANSITION OVERLAY */}
+      {isPreparingStudio && (
+        <div className="glass-panel p-8 flex flex-col items-center justify-center space-y-4 text-center border-2 border-purple-500/60 bg-slate-900/95 animate-slide-up shadow-2xl">
+          <div className="w-14 h-14 rounded-full border-4 border-purple-500 border-t-transparent animate-spin"></div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-extrabold text-white font-heading">Preparing Your AI Coaching Studio...</h3>
+            <p className="text-xs text-slate-400 font-mono">Configuring real-time WebRTC camera, audio metering, and multimodal coaching engine.</p>
+          </div>
+          <div className="flex gap-3 text-xs font-mono pt-2">
+            <span className={`px-3 py-1 rounded-full border ${prepStep >= 1 ? 'bg-emerald-950 text-emerald-300 border-emerald-700' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>
+              ✓ Mic Stream Ready
+            </span>
+            <span className={`px-3 py-1 rounded-full border ${prepStep >= 2 ? 'bg-cyan-950 text-cyan-300 border-cyan-700' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>
+              ✓ Camera Feed Active
+            </span>
+            <span className={`px-3 py-1 rounded-full border ${prepStep >= 3 ? 'bg-purple-950 text-purple-300 border-purple-700' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>
+              ✓ AI Coach Connected
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* PRE-SESSION HERO CHALLENGE CARD (INTENTIONAL PRE-SESSION EXPERIENCE) */}
+      {!isSessionActive && !isPreparingStudio && (
+        <div className="glass-panel p-6 border-2 border-purple-500/50 bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/40 space-y-4 rounded-3xl shadow-2xl">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2 bg-purple-950/80 px-3.5 py-1 rounded-full border border-purple-500/40">
+              <Brain size={14} className="text-purple-400" /> TODAY'S PRACTICE CHALLENGE
+            </span>
+            <span className="text-xs font-mono text-cyan-300 font-bold bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800">
+              Mode: {currentMode.title}
+            </span>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-extrabold text-white font-heading leading-tight">
+              "{currentTopic || currentMode.title}"
+            </h2>
+            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              Target Persona: <strong className="text-cyan-300 capitalize">{audienceType}</strong> — Focus on clear declarations, silent pauses, and direct eye contact.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
+            <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
+              <span>Target Duration: <strong>02:00</strong></span>
+              <span>•</span>
+              <span className="text-emerald-400">AI Coach Ready</span>
+            </div>
+
+            <button onClick={handleStartPracticeSession} className="btn-primary text-sm font-bold shadow-lg shadow-purple-500/30 flex items-center gap-2">
+              <Play size={18} /> START LIVE PRACTICE SESSION
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Studio Header Bar */}
-      <div className="glass-panel p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-l-purple-500">
+      <div className="glass-panel p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-l-purple-500">
         <div>
           <div className="flex items-center gap-2 text-xs text-purple-400 font-mono font-semibold uppercase tracking-wider">
-            <Sparkles size={14} /> LIVE PRACTICE STUDIO
+            <Sparkles size={14} /> LIVE AI COACHING STUDIO
             <span className="text-slate-600">•</span>
             <span className={isCameraActive && cameraStatus === 'granted' ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold flex items-center gap-1'}>
               {isCameraActive && cameraStatus === 'granted' ? <Video size={13} /> : <CameraOff size={13} />}
               Camera {isCameraActive && cameraStatus === 'granted' ? 'Active' : 'Disabled / Audio-Only'}
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-white mt-1 flex items-center gap-2 font-heading">
-            <Brain className="text-purple-400" size={24} /> "{currentTopic || currentMode.title}"
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Mode: <span className="text-slate-300 font-semibold">{currentMode.title}</span> | Audience: <span className="text-cyan-300 font-semibold capitalize">{audienceType}</span>
-            {activeChallenge && <span className="ml-2 text-amber-300">| {activeChallenge.prompt}</span>}
-          </p>
+          <h3 className="text-lg font-bold text-white mt-1 font-heading flex items-center gap-2">
+            "{currentTopic || currentMode.title}"
+          </h3>
         </div>
 
         {/* Header Action Controls */}
@@ -361,11 +428,7 @@ export default function StudioView({
             </div>
           )}
 
-          {!isSessionActive ? (
-            <button onClick={handleStartPracticeSession} className="btn-primary flex-1 md:flex-none">
-              <Play size={18} /> Start Live Practice
-            </button>
-          ) : (
+          {isSessionActive && (
             <button onClick={handleEndSession} className="btn-danger flex-1 md:flex-none">
               <Square size={18} /> Complete & Analyze Session
             </button>
@@ -373,8 +436,58 @@ export default function StudioView({
         </div>
       </div>
 
-      {/* Live Metrics HUD */}
+      {/* SINGLE DYNAMIC LIVE AI COACHING INSIGHT CARD (SECTION 8 REQUIREMENT) */}
       {isSessionActive && (
+        <div className="glass-panel p-4 border-2 border-cyan-500/60 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-purple-950/40 space-y-1.5 animate-slide-up">
+          <div className="flex justify-between items-center text-xs font-mono">
+            <span className="text-cyan-300 font-bold uppercase flex items-center gap-1.5">
+              <Sparkles size={14} className="text-cyan-400 animate-spin-slow" /> LIVE AI COACH INSIGHT
+            </span>
+            <span className="text-[10px] text-slate-400">Updates from real speech & vision data</span>
+          </div>
+          <p className="text-sm font-extrabold text-white leading-relaxed font-heading">
+            {wpm > 165
+              ? `You're speaking slightly faster than your target (${wpm} WPM). Try adding a 1.5-second silent pause.`
+              : wpm >= 120 && wpm <= 165
+              ? `Vocal cadence is optimal (${wpm} WPM) with strong sentence structure.`
+              : fillers.length > 0
+              ? `Filler detected ("${fillers[fillers.length - 1]}"). Replace hesitation words with silent pauses.`
+              : volume > 15
+              ? `Strong vocal conviction — maintain direct camera lens gaze.`
+              : `Silence detected — deliver your next takeaway with firm authority.`}
+          </p>
+        </div>
+      )}
+
+      {/* COMPACT COMMUNICATION PULSE BAR (SECTION 9 REQUIREMENT) */}
+      {isSessionActive && (
+        <div className="glass-panel p-3 border border-slate-800 flex justify-between items-center gap-2 flex-wrap text-xs font-mono">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-slate-400 font-sans font-bold flex items-center gap-1">
+              <Sparkles size={13} className="text-purple-400" /> PULSE:
+            </span>
+            <span className={`px-2.5 py-0.5 rounded-full font-bold border ${wpm > 175 ? 'bg-amber-950 text-amber-300 border-amber-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'}`}>
+              PACE ● {wpm > 175 ? 'RUSHED' : 'OPTIMAL'} ({wpm} WPM)
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">
+              CLARITY ● HIGH
+            </span>
+            <span className={`px-2.5 py-0.5 rounded-full font-bold border ${fillers.length > 3 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'}`}>
+              FILLERS ● {fillers.length} DETECTED
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowDetailedMetrics(!showDetailedMetrics)}
+            className="text-[11px] font-bold text-purple-400 hover:text-purple-300 transition-colors font-sans"
+          >
+            {showDetailedMetrics ? 'Collapse Detailed Metrics ↑' : 'Expand Detailed Metrics ↓'}
+          </button>
+        </div>
+      )}
+
+      {/* Detailed Live Metrics HUD (EXPANDABLE) */}
+      {isSessionActive && showDetailedMetrics && (
         <LiveMetricsHUD
           wpm={wpm}
           fillers={fillers}

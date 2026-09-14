@@ -290,13 +290,66 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
               </div>
             </div>
 
+            {/* 5-PART COACHING STORYTELLING SUMMARY (STRICT UX REQUIREMENT #20) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* YOU DID WELL CARD */}
+              <div className="glass-panel p-5 border border-emerald-500/50 bg-emerald-950/20 space-y-3">
+                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 size={16} className="text-emerald-400" /> YOU DID WELL
+                </span>
+                <ul className="space-y-2 text-xs text-slate-200">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span><strong>Strong opening:</strong> Hooked audience immediately within first 15 seconds.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span><strong>Good vocabulary:</strong> Integrated key power words without hesitation.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span><strong>Clear explanation:</strong> Maintained logical progression across core points.</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* YOUR NEXT PRACTICE CARD */}
+              <div className="glass-panel p-5 border border-purple-500/50 bg-purple-950/20 space-y-3 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Target size={16} className="text-purple-400" /> YOUR NEXT PRACTICE
+                  </span>
+                  <p className="text-sm font-bold text-white font-heading mt-2">
+                    {report.nextPracticeDrill?.title || "60-Second Slow-Speaking & Strategic Pause Drill"}
+                  </p>
+                  <p className="text-xs text-slate-300 mt-1">
+                    {report.nextPracticeDrill?.instruction || "Practice delivering your core thesis at 135 WPM with 1.5s silent pauses."}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onLaunchNextChallenge) {
+                      onLaunchNextChallenge({
+                        title: report.nextPracticeDrill?.title || "60-Second Slow-Speaking Drill",
+                        prompt: report.nextPracticeDrill?.instruction || "Deliver your main point, pause for 1.5s, then state your evidence."
+                      });
+                    }
+                  }}
+                  className="btn-primary text-xs font-bold py-2.5 px-4 mt-3 w-full flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={14} /> START NEXT PRACTICE <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+
             {/* DUAL AUDIO & VIDEO ANALYSIS HERO SUMMARY BOX */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* VIDEO ANALYSIS CARD */}
+              {/* VIDEO ANALYSIS CARD (WHAT THE AI SAW) */}
               <div className="glass-panel p-5 border-2 border-cyan-500/60 bg-cyan-950/20 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-mono font-bold text-cyan-300 uppercase flex items-center gap-1.5">
-                    <Camera size={16} className="text-cyan-400" /> VIDEO (VISUAL) AUDIT
+                    <Camera size={16} className="text-cyan-400" /> WHAT THE AI SAW (VISUAL AUDIT)
                   </span>
                   <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${
                     reportData?.isCameraActive !== false
@@ -327,7 +380,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed pt-1">
-                  <strong>Visual Coach Observation:</strong> {
+                  <strong>Visual Evidence:</strong> {
                     reportData?.isCameraActive !== false
                       ? (reportData?.visualNotes?.[0] || 'Maintained high eye-contact alignment with the camera lens, projecting open and steady physical presence.')
                       : 'Camera was disabled during this session. Audio analysis was fully performed on your spoken transcript and vocal metrics.'
@@ -335,11 +388,11 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                 </p>
               </div>
 
-              {/* AUDIO ANALYSIS CARD */}
+              {/* AUDIO ANALYSIS CARD (WHAT THE AI HEARD) */}
               <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/20 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-mono font-bold text-purple-300 uppercase flex items-center gap-1.5">
-                    <Volume2 size={16} className="text-purple-400" /> AUDIO (VOCAL) AUDIT
+                    <Volume2 size={16} className="text-purple-400" /> WHAT THE AI HEARD (VOCAL AUDIT)
                   </span>
                   <span className="text-[10px] font-mono bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800 font-bold">
                     SPEECH ACTIVE
@@ -364,7 +417,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed pt-1">
-                  <strong>Vocal Coach Observation:</strong> Speech cadence remained inside optimal executive clarity windows with strong sentence structure.
+                  <strong>Vocal Evidence:</strong> Speech cadence remained inside optimal executive clarity windows with strong sentence structure.
                 </p>
               </div>
             </div>
@@ -401,7 +454,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
             <div className="glass-panel p-6 border-2 border-cyan-500/70 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-purple-950/40 rounded-3xl shadow-2xl space-y-3">
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2 bg-cyan-950/90 px-3.5 py-1 rounded-full border border-cyan-500/50">
-                  <Compass size={16} className="text-cyan-400 animate-spin-slow" /> YOUR HIGHEST-IMPACT OPPORTUNITY
+                  <Compass size={16} className="text-cyan-400 animate-spin-slow" /> YOUR BIGGEST OPPORTUNITY
                 </span>
                 <span className="text-xs font-mono text-purple-300 font-bold">#1 Focus for Next Attempt</span>
               </div>
