@@ -597,6 +597,12 @@ export default function StudioView({
             onRetryCamera={initCamera}
             visualData={visualData}
             isMicActive={isMicActive}
+            onToggleMic={handleToggleMic}
+            isSessionActive={isSessionActive}
+            isSessionPaused={isSessionPaused}
+            onTogglePause={handleToggleSessionPause}
+            onRestartSession={handleRestartSession}
+            onFinishSession={handleEndSession}
             volume={volume}
           />
 

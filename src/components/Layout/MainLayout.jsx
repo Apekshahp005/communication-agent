@@ -1,160 +1,159 @@
 import React, { useState } from 'react';
 import {
-  Sparkles, Video, Grid, Target, TrendingUp, Brain, Settings, Volume2, VolumeX, Menu, X, Flame, ShieldCheck, Compass
+  Sparkles, Video, Grid, Target, TrendingUp, Settings, HelpCircle, X, CheckCircle2, User
 } from 'lucide-react';
 
 export default function MainLayout({ activeTab, onTabChange, children }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  const navItems = [
-    { id: 'studio', label: 'Practice Studio', icon: Video, badge: 'LIVE' },
-    { id: 'topic', label: 'Topic & Timer Setup', icon: Compass },
-    { id: 'modes', label: 'Practice Environments', icon: Grid },
-    { id: 'challenges', label: 'Targeted Drills', icon: Target },
-    { id: 'progress', label: 'Progress & Analytics', icon: TrendingUp }
+  const navCenterItems = [
+    { id: 'studio', label: 'Practice', icon: Video },
+    { id: 'modes', label: 'Modes', icon: Grid },
+    { id: 'challenges', label: 'Drills', icon: Target },
+    { id: 'progress', label: 'Progress', icon: TrendingUp }
   ];
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row text-slate-100 bg-slate-950 overflow-x-hidden">
-      {/* DESKTOP SIDEBAR NAVIGATION */}
-      <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-slate-800/80 m-4 p-5 space-y-6 shrink-0 bg-slate-900/80 backdrop-blur-2xl">
-        {/* Logo Badge */}
-        <div className="flex items-center gap-3 pb-2 border-b border-slate-800/80">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
-            <Sparkles size={22} className="animate-pulse" />
-          </div>
-          <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-white font-heading">AI Communication Coach</h1>
-            <p className="text-[10px] font-mono text-purple-400 font-bold tracking-wider uppercase mt-0.5">
-              Speak • Analyze • Improve
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation items */}
-        <nav className="flex-1 space-y-2">
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider px-3 block mb-1">
-            AI STUDIO WORKSPACE
-          </span>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onTabChange(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold font-heading transition-all ${
-                  isActive
-                    ? 'bg-purple-600/30 text-purple-200 border border-purple-500/60 shadow-lg shadow-purple-500/20 scale-[1.02]'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon size={18} className={isActive ? 'text-purple-400' : 'text-slate-500'} />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* QUICK WARMUP CTA */}
-        <div className="glass-panel p-4 border-purple-500/40 bg-purple-950/20 space-y-2 rounded-2xl">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300 font-heading">
-            <Flame size={14} className="text-amber-400" />
-            <span>60s Executive Warmup</span>
-          </div>
-          <p className="text-[10px] text-slate-400">Train thesis clarity before your next meeting.</p>
-          <button
-            onClick={() => onTabChange('challenges')}
-            className="btn-primary text-[11px] font-bold py-1.5 px-3 w-full justify-center shadow-md shadow-purple-500/20"
+    <div className="min-h-screen flex flex-col text-slate-100 bg-[#05070D] overflow-x-hidden relative">
+      {/* FLOATING GLASS PILL TOP NAVIGATION BAR */}
+      <header className="sticky top-4 z-40 px-4 md:px-8 max-w-7xl mx-auto w-full">
+        <div className="glass-pill px-5 py-3 flex items-center justify-between border border-white/10 bg-slate-900/80 backdrop-blur-2xl shadow-2xl">
+          {/* LEFT: LOGO / WORDMARK */}
+          <div
+            onClick={() => onTabChange('studio')}
+            className="flex items-center gap-3 cursor-pointer group"
           >
-            Start Warmup Drill →
-          </button>
-        </div>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25 group-hover:scale-105 transition-transform">
+              <Sparkles size={18} />
+            </div>
+            <div className="hidden sm:block">
+              <span className="text-sm font-extrabold tracking-tight text-white font-heading block leading-none">
+                AI Communication Coach
+              </span>
+              <span className="text-[10px] font-mono text-purple-400 font-semibold tracking-wider uppercase block mt-1">
+                Personal AI Studio
+              </span>
+            </div>
+          </div>
 
-        <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-1 font-mono">
+          {/* CENTER: NAV LINKS */}
+          <nav className="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded-full border border-white/5">
+            {navCenterItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onTabChange(item.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold font-heading transition-all ${
+                    isActive
+                      ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-md shadow-purple-500/20 scale-[1.02]'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  }`}
+                >
+                  <Icon size={15} className={isActive ? 'text-purple-400' : 'text-slate-400'} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* RIGHT: SETTINGS & HELP */}
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-bold text-white">AI MULTIMODAL ENGINE</span>
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              title="Help & Framework Guide"
+            >
+              <HelpCircle size={18} />
+            </button>
+
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              title="Audio & Vision Settings"
+            >
+              <Settings size={18} />
+            </button>
+
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold border border-white/20 shadow-md">
+              <User size={16} />
+            </div>
           </div>
-          <p className="text-[10px] text-slate-500">Vision + Speech Recognition Active</p>
         </div>
-      </aside>
+      </header>
 
-      {/* MOBILE STICKY TOP HEADER */}
-      <div className="md:hidden sticky top-0 z-30 flex justify-between items-center p-3.5 glass-panel border-b border-slate-800/80 m-2 bg-slate-950/90 backdrop-blur-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <span className="font-bold text-sm text-white font-heading block">AI Communication Coach</span>
-            <span className="text-[9px] font-mono text-purple-400 font-semibold block">Speak • Analyze • Improve</span>
-          </div>
-        </div>
+      {/* MAIN VIEWPORT CONTAINER */}
+      <main className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
+        {children}
+      </main>
 
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-slate-300 hover:bg-slate-800 rounded-xl"
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-
-      {/* MOBILE COLLAPSIBLE DRAWER */}
-      {mobileMenuOpen && (
-        <div className="md:hidden glass-panel m-2 p-4 space-y-2 animate-slide-up z-30">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onTabChange(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold font-heading ${
-                  activeTab === item.id ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50' : 'text-slate-300'
-                }`}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
+      {/* SETTINGS SHEET MODAL */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xl p-4 animate-slide-up">
+          <div className="glass-panel p-6 max-w-md w-full border-purple-500/50 space-y-4 relative">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2 font-heading">
+                <Settings size={18} className="text-purple-400" /> AI Coach Studio Settings
+              </h3>
+              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-white">
+                <X size={18} />
               </button>
-            );
-          })}
+            </div>
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <span>WebRTC Camera Stream</span>
+                <span className="text-emerald-400 font-mono font-bold">Enabled</span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <span>Web Audio Amplitude Metering</span>
+                <span className="text-emerald-400 font-mono font-bold">Active</span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <span>Speech Recognition STT</span>
+                <span className="text-purple-400 font-mono font-bold">Real-Time</span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <span>Gemini 2.5 Multimodal Engine</span>
+                <span className="text-cyan-400 font-mono font-bold">Connected</span>
+              </div>
+            </div>
+            <button onClick={() => setIsSettingsOpen(false)} className="btn-primary w-full text-xs justify-center">
+              Done
+            </button>
+          </div>
         </div>
       )}
 
-      {/* MAIN VIEWPORT CONTAINER */}
-      <div className="flex-1 flex flex-col p-3 md:p-6 max-w-7xl mx-auto w-full mb-20 md:mb-0">
-        {children}
-      </div>
-
-      {/* MOBILE BOTTOM GLASS NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800/80 p-2 flex justify-around items-center z-40 bg-slate-950/95 backdrop-blur-xl">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold font-heading transition-all ${
-                isActive ? 'text-purple-400 font-extrabold scale-105' : 'text-slate-500'
-              }`}
-            >
-              <Icon size={20} />
-              <span>{item.label.split(' ')[0]}</span>
+      {/* HELP & FRAMEWORK GUIDE MODAL */}
+      {isHelpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xl p-4 animate-slide-up">
+          <div className="glass-panel p-6 max-w-md w-full border-cyan-500/50 space-y-4 relative">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2 font-heading">
+                <HelpCircle size={18} className="text-cyan-400" /> Personal AI Coach Guide
+              </h3>
+              <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-3 text-xs text-slate-300">
+              <p className="flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-cyan-400 shrink-0 mt-0.5" />
+                <span><strong>Live Voice & Vision:</strong> Speak into your mic while keeping camera active. The AI evaluates vocal pace and visual presence simultaneously.</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-purple-400 shrink-0 mt-0.5" />
+                <span><strong>Clickable Insights:</strong> Every metric, filler word, and timeline marker can be clicked to open targeted practice drills.</span>
+              </p>
+            </div>
+            <button onClick={() => setIsHelpOpen(false)} className="btn-primary w-full text-xs justify-center">
+              Close Guide
             </button>
-          );
-        })}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
