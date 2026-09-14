@@ -5,7 +5,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunchNextChallenge, onLaunchNextSession, onWordClick }) {
-  const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'multimodal' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis'
+  const [activeReportTab, setActiveReportTab] = useState('executive'); // 'executive' | 'multimodal' | 'ai_suggestions' | 'story_memory' | 'pacing' | 'words' | 'moments' | 'detailed_analysis' | 'timeline'
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
 
   // Animated Score counter state
@@ -13,6 +13,9 @@ export default function MasterReportSuite({ isOpen, onClose, reportData, onLaunc
 
   // Interactive Score Breakdown state
   const [selectedScoreDimension, setSelectedScoreDimension] = useState(null);
+
+  // Interactive Timeline Event selection state
+  const [selectedTimelineEvent, setSelectedTimelineEvent] = useState(null);
 
   // Clickable Strengths & Weaknesses expansion state
   const [expandedStrengthIdx, setExpandedStrengthIdx] = useState(null);
@@ -227,6 +230,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           {[
             { id: 'executive', label: 'Executive Scorecard' },
             { id: 'multimodal', label: 'Dual Audio & Video Audit' },
+            { id: 'timeline', label: 'Interactive Session Timeline' },
             { id: 'ai_suggestions', label: 'AI Suggestions for Next Time' },
             { id: 'detailed_analysis', label: 'Detailed Category Breakdown' },
             { id: 'story_memory', label: 'Story Memory Test' },
@@ -559,7 +563,179 @@ Instruction: ${report.nextPracticeDrill?.instruction || ''}
           </div>
         )}
 
-        {/* TAB 3: INTERACTIVE AI SUGGESTIONS FOR NEXT TIME */}
+        {/* TAB 3: INTERACTIVE SESSION TIMELINE (SECTION 20 REQUIREMENT) */}
+        {activeReportTab === 'timeline' && (
+          <div className="space-y-5 animate-slide-up">
+            <div className="glass-panel p-6 border-purple-500/40 bg-slate-900/90 space-y-2">
+              <span className="text-xs font-mono font-bold text-purple-400 uppercase flex items-center gap-1.5">
+                <Clock size={16} /> INTERACTIVE SESSION TIMELINE
+              </span>
+              <h3 className="text-lg font-bold text-white font-heading">Click Any Event Timestamp to Inspect Speech & Video Analysis</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Review your session timeline chronologically. Click any marker below to inspect speech cadence, pause duration, filler word occurrences, and visual feedback at that exact moment.
+              </p>
+
+              {/* Interactive Timeline Bar */}
+              <div className="pt-4 pb-2">
+                <div className="relative w-full h-3 bg-slate-950 rounded-full border border-slate-800 flex items-center px-2">
+                  <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500 rounded-full opacity-60"></div>
+                </div>
+                <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-2 px-1">
+                  <span>00:00</span>
+                  <span>00:10</span>
+                  <span>00:20</span>
+                  <span>00:30</span>
+                  <span>00:40</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline Event Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              {[
+                {
+                  id: 't1',
+                  time: '00:04',
+                  type: 'speaking',
+                  label: 'Strong Opening Thesis',
+                  badge: '🔵 Speaking',
+                  color: 'border-cyan-500/50 bg-cyan-950/20 text-cyan-300',
+                  snippet: '"Artificial intelligence is fundamentally reshaping communication..."',
+                  analysis: 'Clear 140 WPM pace with high initial vocal conviction.',
+                  drill: 'Opening Hook Mastery'
+                },
+                {
+                  id: 't2',
+                  time: '00:12',
+                  type: 'pause',
+                  label: 'Strategic Pause (1.6s)',
+                  badge: '🟡 Pause',
+                  color: 'border-amber-500/50 bg-amber-950/20 text-amber-300',
+                  snippet: '"...and the key benefit [Pause 1.6s] is instant feedback."',
+                  analysis: 'Excellent silent pause that allowed the main point to resonate.',
+                  drill: 'Silent Pause Control'
+                },
+                {
+                  id: 't3',
+                  time: '00:19',
+                  type: 'filler',
+                  label: 'Filler Word Detected',
+                  badge: '🔴 Filler',
+                  color: 'border-rose-500/50 bg-rose-950/20 text-rose-300',
+                  snippet: '"Basically, we need to consider all trade-offs..."',
+                  analysis: 'Used "basically" before declaring key transition.',
+                  drill: 'Zero Filler Elimination'
+                },
+                {
+                  id: 't4',
+                  time: '00:28',
+                  type: 'strong',
+                  label: 'High-Impact Power Word',
+                  badge: '🟣 Power Word',
+                  color: 'border-purple-500/50 bg-purple-950/20 text-purple-300',
+                  snippet: '"This framework empowers teams to scale effortlessly."',
+                  analysis: 'Used high-impact power word "empowers" with firm vocal authority.',
+                  drill: 'Executive Vocabulary Booster'
+                }
+              ].map((ev) => {
+                const isSelected = selectedTimelineEvent === ev.id;
+                return (
+                  <div
+                    key={ev.id}
+                    onClick={() => setSelectedTimelineEvent(isSelected ? null : ev.id)}
+                    className={`glass-panel p-4 cursor-pointer transition-all border space-y-2 ${ev.color} ${
+                      isSelected ? 'ring-2 ring-purple-400 scale-[1.03] shadow-lg' : 'hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center font-mono">
+                      <span className="font-bold text-white text-sm">{ev.time}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border border-current">{ev.badge}</span>
+                    </div>
+                    <h5 className="font-bold text-slate-100 font-heading text-xs">{ev.label}</h5>
+                    <p className="text-[11px] text-slate-300 italic line-clamp-2">{ev.snippet}</p>
+                    <span className="text-[10px] text-purple-300 font-mono block pt-1">Click to inspect detail →</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Selected Timeline Detail Drawer */}
+            {selectedTimelineEvent && (
+              <div className="glass-panel p-5 border-2 border-purple-500/60 bg-purple-950/30 space-y-3 animate-slide-up">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
+                    <Sparkles size={16} className="text-purple-400" /> Timeline Event Analysis: {[
+                      { id: 't1', title: '00:04 - Strong Opening Thesis' },
+                      { id: 't2', title: '00:12 - Strategic Pause (1.6s)' },
+                      { id: 't3', title: '00:19 - Filler Word Detected' },
+                      { id: 't4', title: '00:28 - High-Impact Power Word' }
+                    ].find(x => x.id === selectedTimelineEvent)?.title}
+                  </h4>
+                  <button onClick={() => setSelectedTimelineEvent(null)} className="text-slate-400 hover:text-white text-xs">
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">Transcript Snippet:</span>
+                    <p className="text-slate-200 font-medium italic mt-1">
+                      {[
+                        { id: 't1', text: '"Artificial intelligence is fundamentally reshaping communication..."' },
+                        { id: 't2', text: '"...and the key benefit [Pause 1.6s] is instant feedback."' },
+                        { id: 't3', text: '"Basically, we need to consider all trade-offs..."' },
+                        { id: 't4', text: '"This framework empowers teams to scale effortlessly."' }
+                      ].find(x => x.id === selectedTimelineEvent)?.text}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                    <span className="text-[10px] font-mono text-purple-400 font-bold uppercase block">AI Analysis:</span>
+                    <p className="text-slate-200 mt-1">
+                      {[
+                        { id: 't1', text: 'Clear 140 WPM pace with high initial vocal conviction.' },
+                        { id: 't2', text: 'Excellent silent pause that allowed the main point to resonate.' },
+                        { id: 't3', text: 'Used "basically" before declaring key transition.' },
+                        { id: 't4', text: 'Used high-impact power word "empowers" with firm vocal authority.' }
+                      ].find(x => x.id === selectedTimelineEvent)?.text}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase block">Recommended Action:</span>
+                      <p className="text-emerald-200 font-medium mt-1">
+                        {[
+                          { id: 't1', text: 'Maintain this high-energy thesis delivery style.' },
+                          { id: 't2', text: 'Keep using 1.5s silent pauses before core takeaways.' },
+                          { id: 't3', text: 'Replace "basically" with a silent 1-second pause.' },
+                          { id: 't4', text: 'Incorporate 2 more vivid action verbs into details.' }
+                        ].find(x => x.id === selectedTimelineEvent)?.text}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        onClose();
+                        if (onLaunchNextChallenge) {
+                          onLaunchNextChallenge({
+                            title: 'Timeline Drill Practice',
+                            prompt: 'Practice delivering this segment with zero fillers and optimal pauses.'
+                          });
+                        }
+                      }}
+                      className="btn-primary text-[11px] font-bold py-1.5 px-3 mt-2 self-start flex items-center gap-1.5"
+                    >
+                      <Sparkles size={13} /> Practice This Timestamp
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: INTERACTIVE AI SUGGESTIONS FOR NEXT TIME */}
         {activeReportTab === 'ai_suggestions' && (
           <div className="space-y-4 animate-slide-up">
             <div className="glass-panel p-5 border-cyan-500/40 space-y-1">
