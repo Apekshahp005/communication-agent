@@ -156,10 +156,22 @@ export class SpeechRecognitionService {
   }
 
   _classifyWords(text) {
-    const tokens = text.toLowerCase().split(/\s+/).filter(Boolean);
+    const rawTokens = text.split(/\s+/).filter(Boolean);
+    const textLower = text.toLowerCase();
 
-    tokens.forEach(word => {
-      const cleanWord = word.replace(/[^a-z]/g, '');
+    // Detect phrase-based filler words
+    FILLER_WORDS.forEach(filler => {
+      if (filler.includes(' ')) {
+        const regex = new RegExp(`\\b${filler}\\b`, 'gi');
+        if (regex.test(textLower)) {
+          this.fillersFound.push(filler);
+          if (this.onFillerDetected) this.onFillerDetected(filler);
+        }
+      }
+    });
+
+    rawTokens.forEach(word => {
+      const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
       if (!cleanWord) return;
 
       let category = 'normal';

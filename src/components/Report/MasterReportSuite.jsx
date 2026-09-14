@@ -473,7 +473,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || 'Deliver your main thesi
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
                     <span className="text-[9px] text-slate-400 block font-sans">Eye Contact</span>
                     <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-cyan-300' : 'text-slate-500'}`}>
-                      {reportData?.isCameraActive !== false ? 'Direct 92%' : 'Not Available'}
+                      {reportData?.isCameraActive !== false ? (reportData?.visualData?.eyeContact || 'Direct Gaze') : 'Not Available'}
                     </span>
                   </div>
                   <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
@@ -650,7 +650,7 @@ Instruction: ${report.nextPracticeDrill?.instruction || 'Deliver your main thesi
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-sans">Eye Contact Alignment</span>
                       <span className={`font-bold ${reportData?.isCameraActive !== false ? 'text-emerald-400' : 'text-slate-500'}`}>
-                        {reportData?.isCameraActive !== false ? '92% Direct' : 'Not Available'}
+                        {reportData?.isCameraActive !== false ? (reportData?.visualData?.eyeContact || 'Direct Gaze') : 'Not Available'}
                       </span>
                     </div>
                     <p className="text-[11px] font-sans text-slate-300">
