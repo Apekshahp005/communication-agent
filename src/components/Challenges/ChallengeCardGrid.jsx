@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Timer, Flame, Sparkles, Compass, Lightbulb, Clock, ShieldAlert } from 'lucide-react';
+import { Target, Timer, Flame, Sparkles, Compass, Lightbulb, Clock, ShieldAlert, ArrowRight } from 'lucide-react';
 
 export const PRACTICE_CHALLENGES = [
   {
@@ -86,16 +86,20 @@ export const PRACTICE_CHALLENGES = [
 
 export default function ChallengeCardGrid({ onLaunchChallenge }) {
   return (
-    <div className="w-full space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Target className="text-purple-400" size={20} /> Targeted Practice Challenges
-          </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Select a timed challenge to train specific communication reflexes under pressure.
-          </p>
+    <div className="w-full space-y-6 animate-slide-up">
+      <div className="glass-panel p-6 border-l-4 border-l-purple-500 bg-slate-900/90 shadow-xl space-y-1">
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <span className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+            <Target size={16} /> HIGH-INTENSITY DRILL ARENA
+          </span>
+          <span className="text-xs font-mono text-cyan-300 font-bold bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-800">
+            8 Timed Drills Ready
+          </span>
         </div>
+        <h2 className="text-xl font-extrabold text-white font-heading">Targeted Communication Refined under Pressure</h2>
+        <p className="text-xs text-slate-400">
+          Select any challenge card below to immediately enter the coaching studio with timed goals.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -105,35 +109,45 @@ export default function ChallengeCardGrid({ onLaunchChallenge }) {
             <div
               key={challenge.id}
               onClick={() => onLaunchChallenge(challenge)}
-              className="glass-panel p-5 cursor-pointer hover:border-purple-500/60 hover:bg-slate-900/80 transition-all flex flex-col justify-between group"
+              className="glass-panel p-5 cursor-pointer hover:border-purple-500/80 hover:bg-slate-900/95 transition-all duration-250 flex flex-col justify-between group shadow-lg hover:shadow-purple-500/20 hover:scale-[1.02] relative overflow-hidden"
             >
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-purple-300 group-hover:scale-110 transition-transform">
-                    <Icon size={18} />
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="w-10 h-10 rounded-xl bg-purple-950/90 border border-purple-500/50 flex items-center justify-center text-purple-300 group-hover:scale-110 transition-transform shadow-md">
+                    <Icon size={20} />
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono ${
-                    challenge.difficulty === 'Extreme' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
-                    challenge.difficulty === 'Hard' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
-                    'bg-slate-800 text-slate-300'
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full font-mono border ${
+                    challenge.difficulty === 'Extreme' ? 'bg-rose-950 text-rose-300 border-rose-700/60 shadow-md shadow-rose-950/40' :
+                    challenge.difficulty === 'Hard' ? 'bg-amber-950 text-amber-300 border-amber-700/60 shadow-md shadow-amber-950/40' :
+                    'bg-slate-900 text-slate-300 border-slate-700'
                   }`}>
                     {challenge.difficulty}
                   </span>
                 </div>
 
-                <h4 className="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">
-                  {challenge.title}
-                </h4>
-                <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">
-                  "{challenge.prompt}"
-                </p>
+                <div>
+                  <h4 className="font-extrabold text-sm text-white group-hover:text-purple-300 transition-colors font-heading">
+                    {challenge.title}
+                  </h4>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed italic">
+                    "{challenge.prompt}"
+                  </p>
+                </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-mono flex items-center gap-1">
-                  <Clock size={12} /> {challenge.timeLimitSec}s
+                <span className="text-slate-400 font-mono flex items-center gap-1.5 font-bold">
+                  <Clock size={13} className="text-cyan-400" /> {challenge.timeLimitSec}s Limit
                 </span>
-                <span className="btn-primary text-[11px] py-1 px-2.5">Launch &rarr;</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLaunchChallenge(challenge);
+                  }}
+                  className="btn-primary text-[11px] font-bold py-1.5 px-3 flex items-center gap-1 shadow-md shadow-purple-500/20"
+                >
+                  <Sparkles size={12} /> Start Drill <ArrowRight size={12} />
+                </button>
               </div>
             </div>
           );
